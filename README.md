@@ -1,3 +1,3 @@
-# ProjectTemplate
+# 4DSlicing
 
-My template for creating visual studio solutions and projects.
+Hopefully, this will have math for perfect 4D -> 3D slicing of tetrahedra -> triangles.
