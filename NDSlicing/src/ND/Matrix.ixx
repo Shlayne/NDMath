@@ -131,9 +131,6 @@ export namespace nd
 		constexpr auto Fill(const S2& scalar, Scalars&&... scalars) -> void;
 	private:
 		Vector<R, S> m_Scalars[C]{ Vector<R, S>() };
-	private:
-		template<size_t C2, size_t R2, Scalar S2> requires(C2 > 0 && R2 > 0)
-		friend struct Matrix;
 	};
 
 	// External Operators
@@ -252,7 +249,7 @@ export namespace nd
 	{
 		for (size_t c = 0; c < C2; c++)
 			for (size_t r = 0; r < R2; r++)
-				m_Scalars[c][r] = S(matrix.m_Scalars[c][r]);
+				m_Scalars[c][r] = S(matrix[c][r]);
 	}
 
 	template<size_t C, size_t R, Scalar S> requires(C > 0 && R > 0)
@@ -286,7 +283,7 @@ export namespace nd
 		{
 			for (size_t c = 0; c < C2; c++)
 				for (size_t r = 0; r < R2; r++)
-					m_Scalars[c][r] = S(matrix.m_Scalars[c][r]);
+					m_Scalars[c][r] = S(matrix[c][r]);
 
 			for (size_t c = C2; c < C; c++)
 				for (size_t r = 0; r < R2 + c - C2; r++)
@@ -306,7 +303,7 @@ export namespace nd
 	template<Scalar S2> requires(std::is_convertible_v<S2, S>)
 	constexpr auto Matrix<C, R, S>::operator+(const S2& scalar) const noexcept -> CMT<C, R, S, S2>
 	{
-		return CMT<C, R, S, S2>(*this) += scalar;
+		return CMT<C, R, S, S2>(*this) += CT<S, S2>(scalar);
 	}
 
 	template<size_t C, size_t R, Scalar S> requires(C > 0 && R > 0)
@@ -323,7 +320,7 @@ export namespace nd
 	template<Scalar S2> requires(std::is_convertible_v<S2, S>)
 	constexpr auto Matrix<C, R, S>::operator+(const Matrix<C, R, S2>& matrix) const noexcept -> CMT<C, R, S, S2>
 	{
-		return CMT<C, R, S, S2>(*this) += matrix;
+		return CMT<C, R, S, S2>(*this) += CMT<C, R, S, S2>(matrix);
 	}
 
 	template<size_t C, size_t R, Scalar S> requires(C > 0 && R > 0)
@@ -340,7 +337,7 @@ export namespace nd
 	template<Scalar S2> requires(std::is_convertible_v<S2, S>)
 	constexpr auto Matrix<C, R, S>::operator-(const S2& scalar) const noexcept -> CMT<C, R, S, S2>
 	{
-		return CMT<C, R, S, S2>(*this) -= scalar;
+		return CMT<C, R, S, S2>(*this) -= CT<S, S2>(scalar);
 	}
 
 	template<size_t C, size_t R, Scalar S> requires(C > 0 && R > 0)
@@ -357,7 +354,7 @@ export namespace nd
 	template<Scalar S2> requires(std::is_convertible_v<S2, S>)
 	constexpr auto Matrix<C, R, S>::operator-(const Matrix<C, R, S2>& matrix) const noexcept -> CMT<C, R, S, S2>
 	{
-		return CMT<C, R, S, S2>(*this) -= matrix;
+		return CMT<C, R, S, S2>(*this) -= CMT<C, R, S, S2>(matrix);
 	}
 
 	template<size_t C, size_t R, Scalar S> requires(C > 0 && R > 0)
@@ -374,7 +371,7 @@ export namespace nd
 	template<Scalar S2> requires(std::is_convertible_v<S2, S>)
 	constexpr auto Matrix<C, R, S>::operator*(const S2& scalar) const noexcept -> CMT<C, R, S, S2>
 	{
-		return CMT<C, R, S, S2>(*this) *= scalar;
+		return CMT<C, R, S, S2>(*this) *= CT<S, S2>(scalar);
 	}
 
 	template<size_t C, size_t R, Scalar S> requires(C > 0 && R > 0)
@@ -391,10 +388,10 @@ export namespace nd
 	template<size_t C2, Scalar S2> requires(std::is_convertible_v<S2, S>)
 	constexpr auto Matrix<C, R, S>::operator*(const Matrix<C2, C, S2>& matrix) const noexcept -> CMT<C2, R, S, S2>
 	{
-		CMT<C2, R, S, S2> result = S();
+		CMT<C2, R, S, S2> result = CT<S, S2>();
 		for (size_t i = 0; i < C2; i++)
 			for (size_t j = 0; j < C; j++)
-				result[i] += m_Scalars[j] * matrix.m_Scalars[i][j];
+				result[i] += CT<S, S2>(m_Scalars[j]) * CT<S, S2>(matrix[i][j]);
 		return result;
 	}
 
@@ -402,14 +399,14 @@ export namespace nd
 	template<Scalar S2> requires(R == C && std::is_convertible_v<S2, S>)
 	constexpr auto Matrix<C, R, S>::operator*=(const Matrix<C, C, S2>& matrix) noexcept -> Matrix<C, R, S>&
 	{
-		return *this = *this * matrix;
+		return *this = CMT<C, R, S, S2>(*this) * CT<S, S2>(matrix);
 	}
 
 	template<size_t C, size_t R, Scalar S> requires(C > 0 && R > 0)
 	template<Scalar S2> requires(std::is_convertible_v<S2, S>)
 	constexpr auto Matrix<C, R, S>::operator/(const S2& scalar) const noexcept -> CMT<C, R, S, S2>
 	{
-		return CMT<C, R, S, S2>(*this) /= scalar;
+		return CMT<C, R, S, S2>(*this) /= CT<S, S2>(scalar);
 	}
 
 	template<size_t C, size_t R, Scalar S> requires(C > 0 && R > 0)
@@ -426,14 +423,14 @@ export namespace nd
 	template<Scalar S2> requires(R == C && std::is_convertible_v<S2, S>)
 	constexpr auto Matrix<C, R, S>::operator/(const Matrix<C, C, S2>& matrix) const noexcept -> CMT<C, R, S, S2>
 	{
-		return CMT<C, R, S, S2>(*this) * Inverse(matrix);
+		return CMT<C, R, S, S2>(*this) * Inverse(CMT<C, R, S, S2>(matrix));
 	}
 
 	template<size_t C, size_t R, Scalar S> requires(C > 0 && R > 0)
 	template<Scalar S2> requires(R == C && std::is_convertible_v<S2, S>)
 	constexpr auto Matrix<C, R, S>::operator/=(const Matrix<C, C, S2>& matrix) noexcept -> Matrix<C, R, S>&
 	{
-		return *this = *this / matrix;
+		return *this = CMT<C, R, S, S2>(*this) / CMT<C, C, S, S2>(matrix);
 	}
 
 	template<size_t C, size_t R, Scalar S> requires(C > 0 && R > 0)
@@ -442,7 +439,7 @@ export namespace nd
 	{
 		CVT<R, S, S2> result;
 		for (size_t c = 0; c < C; c++)
-			result += m_Scalars[c] * vector[c];
+			result += CT<S, S2>(m_Scalars[c]) * CT<S, S2>(vector[c]);
 		return result;
 	}
 
@@ -505,25 +502,25 @@ export namespace nd
 	template<size_t C, size_t R, Scalar S, Scalar S2> requires(std::is_convertible_v<S2, S>)
 	constexpr auto operator+(const S2& scalar, const Matrix<C, R, S>& matrix) noexcept -> CMT<C, R, S, S2>
 	{
-		return CMT<C, R, S, S2>(matrix) += scalar;
+		return CMT<C, R, S, S2>(matrix) += CT<S, S2>(scalar);
 	}
 	
 	template<size_t C, size_t R, Scalar S, Scalar S2> requires(std::is_convertible_v<S2, S>)
 	constexpr auto operator-(const S2& scalar, const Matrix<C, R, S>& matrix) noexcept -> CMT<C, R, S, S2>
 	{
-		return CMT<C, R, S, S2>(-matrix) += scalar;
+		return CMT<C, R, S, S2>(-matrix) += CT<S, S2>(scalar);
 	}
 	
 	template<size_t C, size_t R, Scalar S, Scalar S2> requires(std::is_convertible_v<S2, S>)
 	constexpr auto operator*(const S2& scalar, const Matrix<C, R, S>& matrix) noexcept -> CMT<C, R, S, S2>
 	{
-		return CMT<C, R, S, S2>(matrix) * scalar;
+		return CMT<C, R, S, S2>(matrix) *= CT<S, S2>(scalar);
 	}
 	
 	template<size_t CR, Scalar S, Scalar S2> requires(std::is_convertible_v<S2, S>)
 	constexpr auto operator/(const S2& scalar, const Matrix<CR, CR, S>& matrix) noexcept -> CMT<CR, CR, S, S2>
 	{
-		return Inverse(CMT<CR, CR, S, S2>(matrix)) * scalar;
+		return Inverse(CMT<CR, CR, S, S2>(matrix)) *= CT<S, S2>(scalar);
 	}
 	
 	template<size_t C, size_t R, Scalar S, Scalar S2> requires(std::is_convertible_v<S2, S>)
@@ -531,9 +528,9 @@ export namespace nd
 	{
 		CVT<C, S, S2> result;
 
-		CMT<R, C, S, S2> m = Transpose(CMT<R, C, S, S2>(matrix));
+		CMT<R, C, S, S2> m = Transpose(CMT<C, R, S, S2>(matrix));
 		for (size_t r = 0; r < R; r++)
-			result += m[r] * vector[r];
+			result += CVT<R, S, S2>(m[r]) * CVT<R, S, S2>(vector[r]);
 
 		return result;
 	}
@@ -691,7 +688,7 @@ export namespace nd
 		rotation[A1][A1] = cos; rotation[A2][A1] = -sin;
 		rotation[A1][A2] = sin; rotation[A2][A2] = cos;
 
-		return matrix * rotation;
+		return CMT<CR, CR, S, S2>(matrix) * rotation;
 	}
 	
 	template<size_t CR, Scalar S, Scalar S2>
@@ -708,24 +705,24 @@ export namespace nd
 		rotation[A1][A1] = cos; rotation[A2][A1] = -sin;
 		rotation[A1][A2] = sin; rotation[A2][A2] = cos;
 
-		return matrix * rotation;
+		return CMT<CR, CR, S, S2>(matrix) * rotation;
 	}
 	
 	template<size_t CR, Scalar S, Scalar S2> requires(std::is_convertible_v<S2, S>)
 	constexpr auto Scale(const Matrix<CR, CR, S>& matrix, const Vector<CR - 1, S2>& scale) -> CMT<CR, CR, S, S2>
 	{
-		CMT<CR, CR, S, S2> scale;
+		CMT<CR, CR, S, S2> s;
 		for (size_t cr = 0; cr < CR - 1; cr++)
-			scale[cr][cr] = CT<S, S2>(scale[cr]);
-		return matrix * scale;
+			s[cr][cr] = CT<S, S2>(scale[cr]);
+		return CMT<CR, CR, S, S2>(matrix) * s;
 	}
 	
 	template<size_t CR, Scalar S, Scalar S2> requires(std::is_convertible_v<S2, S>)
 	constexpr auto Scale(const Matrix<CR, CR, S>& matrix, const S2& scale) -> CMT<CR, CR, S, S2>
 	{
-		CMT<CR, CR, S, S2> scale = CT<S, S2>(scale);
-		scale[CR - 1][CR - 1] = CT<S, S2>(1);
-		return matrix * scale;
+		CMT<CR, CR, S, S2> s = CT<S, S2>(scale);
+		s[CR - 1][CR - 1] = CT<S, S2>(1);
+		return CMT<CR, CR, S, S2>(matrix) * s;
 	}
 
 	template<size_t C, size_t R, std::floating_point S>
@@ -741,7 +738,7 @@ export namespace nd
 	template<size_t C, size_t R, std::integral S>
 	auto operator<<(std::ostream& ostream, const Matrix<C, R, S>& matrix) -> std::ostream&
 	{
-		static constexpr long long width = std::is_signed_v<S> + (long long)(gcem::max(
+		constexpr long long width = std::is_signed_v<S> + (long long)(gcem::max(
 			S(gcem::ceil(gcem::log10(std::make_unsigned_t<S>(std::numeric_limits<S>::min())))),
 			S(gcem::ceil(gcem::log10(std::make_unsigned_t<S>(std::numeric_limits<S>::max()))))
 		));
