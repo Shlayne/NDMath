@@ -3,6 +3,7 @@
 #include "ND/Matrix.h"
 #include "ND/Mesh.h"
 #include <array>
+#include <set>
 
 namespace nd
 {
@@ -48,8 +49,10 @@ namespace nd
 		// But, after you're done using this Slicer, calling this is recommended.
 		void Reset() noexcept;
 	private:
+		void CalculateIntersections(std::set<Vector<T, N - 1>>& rOutVertices);
+
 		template<uint32_t N2>
-		void CalculateIntersections(std::vector<Vertex<T, N2>>& rOutVertices);
+		void CalculateIntersectionsImpl(std::set<Vector<T, N2 - 1>>& rOutVertices, const std::array<Index, N2>& crSimplexIndices);
 
 		template<uint32_t N2>
 		static constexpr std::array<Index, N2 * (N2 + 1)> GenerateSimplexIndices();

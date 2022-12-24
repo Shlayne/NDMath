@@ -17,54 +17,62 @@ namespace nd
 		m_cpMeshIn = &crMeshIn;
 		m_cpSlice = &crSlice;
 
-		std::vector<Vertex<T, N - 1>> vertices;
-		CalculateIntersections<N - 1>(vertices);
+		std::set<Vector<T, N - 1>> vertices;
+		CalculateIntersections(vertices);
 
 		return Succeed();
 	}
 
 	template<typename T, uint32_t N>
+	inline void Slicer<T, N>::CalculateIntersections(std::set<Vector<T, N - 1>>& rOutVertices)
+	{
+		const auto& crIndicesIn = m_cpMeshIn->indices;
+
+		for (Index i = 0; i < crIndicesIn.size(); i += N)
+		{
+			std::array<Index, N> simplexIndices;
+			for (Index n = 0; n < N; n++)
+				simplexIndices[n] = i + n;
+			CalculateIntersectionsImpl<N>(rOutVertices, simplexIndices);
+		}
+	}
+
+	template<typename T, uint32_t N>
 	template<uint32_t N2>
-	inline void Slicer<T, N>::CalculateIntersections(std::vector<Vertex<T, N2>>& rOutVertices)
+	inline void Slicer<T, N>::CalculateIntersectionsImpl(std::set<Vector<T, N2 - 1>>& rOutVertices, const std::array<Index, N2>& crSimplexIndices)
 	{
 		constexpr std::array<Index, N2 * (N2 + 1)> simplexIndices = GenerateSimplexIndices<N2>();
 
-		const std::vector<Index>& crIndicesIn = m_cpMeshIn->indices;
-		const std::vector<Vertex<T, N>>& crVerticesIn = m_cpMeshIn->vertices;
+		const auto& crIndicesIn = m_cpMeshIn->indices;
+		const auto& crVerticesIn = m_cpMeshIn->vertices;
+		T slice = *m_cpSlice;
 
-		for (size_t i = 0; i < crIndicesIn.size(); i += N2 + 1)
+		if constexpr (N2 > 1)
 		{
-			if constexpr (N2 == 1)
+			std::set<Vector<T, N2 - 1>> vertices;
+			CalculateIntersectionsImpl<N2 - 1>(vertices);
+		}
+		else if constexpr (N2 == 1)
+		{
+			for (size_t i = 0; i < crIndicesIn.size(); i += N2 + 1)
 			{
-				const Vector<T, N>& crVertexA = crVerticesIn[crIndicesIn[i + 0]].position;
-				const Vector<T, N>& crVertexB = crVerticesIn[crIndicesIn[i + 1]].position;
+				auto vertexA = crVerticesIn[crIndicesIn[i + 0]].position;
+				auto vertexB = crVerticesIn[crIndicesIn[i + 1]].position;
+				vertexA[N2] -= slice;
+				vertexB[N2] -= slice;
 
 				// If intersection...
-				if (gcem::signbit(crVertexA[N2]) != gcem::signbit(crVertexB[N2]) || crVertexA[N2] == crVertexB[N2])
+				if (gcem::signbit(vertexA[N2]) != gcem::signbit(vertexB[N2]))
 				{
-					T t = crVertexA[N2] / (crVertexA[N2] * crVertexB[N2]);
-
-					(Vector<T, N2>)crVertexA;
-					//rOutVertices.emplace_back(nd::Lerp((Vector<T, N2>)crVertexA, (Vector<T, N2>)crVertexB, t));
+					T t = vertexA[N2] / (vertexA[N2] - vertexB[N2]);
+					rOutVertices.insert(Lerp((Vector<T, N - 1>)vertexA, (Vector<T, N2>)vertexB, t));
 				}
-			}
-			else
-			{
-
+				else if (vertexA[N2] == vertexB[N2])
+					rOutVertices.insert(vertexA[N2]);
 			}
 		}
 
-		//std::vector<Vertex<T, N2 - 1>> vertices;
-		//if constexpr (N2 > 1)
-		//	CalculateIntersections<N2 - 1>(vertices);
-
-		//	Get cross sections of (n - 1)-simplex
-		//		...
-		//			Get cross sections of 5-simplex
-		//				Get cross sections of pentachora (4-simplex)
-		//					Get cross sections of tetrahedra (3-simplex)
-		//						Get cross sections of triangles (2-simplex)
-		//							Get cross sections of lines (1-simplex)
+		__debugbreak();
 	}
 
 	template<typename T, uint32_t N>
