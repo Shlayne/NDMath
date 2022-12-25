@@ -5,7 +5,8 @@ module;
 export module nd.vector;
 
 import nd.scalar;
-import std.core;
+import <iostream>;
+import <algorithm>;
 
 namespace nd
 {

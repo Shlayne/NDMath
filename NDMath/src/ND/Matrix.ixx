@@ -6,7 +6,8 @@ export module nd.matrix;
 
 import nd.scalar;
 import nd.vector;
-import std.core;
+import <iomanip>;
+import <iostream>;
 
 namespace nd
 {
