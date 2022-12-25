@@ -1,80 +1,76 @@
-#include "Test.h"
+export module test;
 
 import nd;
-import <iostream>;
-// These can't be imported 'cause their header units aren't found by visual studio for some reason.
-//#include <array>
-//#include <set>
-//#include <unordered_set>
-//#include <functional>
+import std.core;
 
 using namespace nd;
-// TODO: Loader.inl completion.
 
-//template<size_t N, Scalar S>
-//using LineSegment = std::pair<Vector<N, S>, Vector<N, S>>;
-//
-//template<size_t N, Scalar S>
-//struct LineSegmentEqual
-//{
-//	constexpr auto operator()(const LineSegment<N, S>& lineSegment1, const LineSegment<N, S>& lineSegment2) const noexcept -> bool
-//	{
-//		std::cout << "pvv\n";
-//		auto hash11 = Vector<N, S>::Hash()(lineSegment1.first);
-//		auto hash12 = Vector<N, S>::Hash()(lineSegment1.second);
-//		auto hash21 = Vector<N, S>::Hash()(lineSegment2.first);
-//		auto hash22 = Vector<N, S>::Hash()(lineSegment2.second);
-//		return (hash11 == hash21 && hash12 == hash22) ||
-//			   (hash11 == hash22 && hash12 == hash21);
-//	}
-//};
-//
-//template< size_t N, size_t N2, Scalar S>
-//struct LineSegmentArrayEqual
-//{
-//	constexpr auto operator()(const std::array<LineSegment<N, S>, N2>& lineSegmentArray1, const std::array<LineSegment<N, S>, N2>& lineSegmentArray2) const noexcept -> bool
-//	{
-//		std::cout << "apvv\n";
-//		// TODO: too sensitive.
-//		LineSegmentEqual<N, S> vpe;
-//		return (vpe(lineSegmentArray1[0], lineSegmentArray2[0]) && vpe(lineSegmentArray1[1], lineSegmentArray2[1]) && vpe(lineSegmentArray1[2], lineSegmentArray2[2])) ||
-//			   (vpe(lineSegmentArray1[0], lineSegmentArray2[1]) && vpe(lineSegmentArray1[1], lineSegmentArray2[0]) && vpe(lineSegmentArray1[2], lineSegmentArray2[2])) ||
-//			   (vpe(lineSegmentArray1[0], lineSegmentArray2[0]) && vpe(lineSegmentArray1[1], lineSegmentArray2[2]) && vpe(lineSegmentArray1[2], lineSegmentArray2[1])) ||
-//			   (vpe(lineSegmentArray1[0], lineSegmentArray2[2]) && vpe(lineSegmentArray1[1], lineSegmentArray2[0]) && vpe(lineSegmentArray1[2], lineSegmentArray2[1])) ||
-//			   (vpe(lineSegmentArray1[0], lineSegmentArray2[1]) && vpe(lineSegmentArray1[1], lineSegmentArray2[2]) && vpe(lineSegmentArray1[2], lineSegmentArray2[0])) ||
-//			   (vpe(lineSegmentArray1[0], lineSegmentArray2[2]) && vpe(lineSegmentArray1[1], lineSegmentArray2[1]) && vpe(lineSegmentArray1[2], lineSegmentArray2[0]));
-//	}
-//};
-//
-//template<size_t N, Scalar S>
-//struct LineSegmentHash
-//{
-//	constexpr size_t operator()(const LineSegment<N, S>& lineSegment) const noexcept
-//	{
-//		return Vector<N, S>::Hash()(lineSegment.first) ^ Vector<N, S>::Hash()(lineSegment.second);
-//	}
-//};
-//
-//template<size_t N, size_t N2, Scalar S>
-//struct LineSegmentArrayHash
-//{
-//	constexpr size_t operator()(const std::array<LineSegment<N, S>, N2>& lineSegmentArray) const noexcept
-//	{
-//		size_t hash = 0;
-//		for (uint32_t n = 0; n < N2; n++)
-//			hash ^= Vector<N, S>::Hash()(lineSegmentArray[n].first) | Vector<N, S>::Hash()(lineSegmentArray[n].second);
-//		return hash;
-//	}
-//};
-//
-//using LineSegment3f = LineSegment<3, float>;
-//using LineSegmentEqual3f = LineSegmentEqual<3, float>;
-//using LineSegmentArrayEqual3f = LineSegmentArrayEqual<3, 3, float>;
-//using LineSegmentHash3f = LineSegmentHash<3, float>;
-//using LineSegmentArrayHash3f = LineSegmentArrayHash<3, 3, float>;
-
-namespace test
+export namespace test
 {
+	// TODO: Loader.inl completion.
+
+	//template<size_t N, Scalar S>
+	//using LineSegment = std::pair<Vector<N, S>, Vector<N, S>>;
+	//
+	//template<size_t N, Scalar S>
+	//struct LineSegmentEqual
+	//{
+	//	constexpr auto operator()(const LineSegment<N, S>& lineSegment1, const LineSegment<N, S>& lineSegment2) const noexcept -> bool
+	//	{
+	//		std::cout << "pvv\n";
+	//		auto hash11 = Vector<N, S>::Hash()(lineSegment1.first);
+	//		auto hash12 = Vector<N, S>::Hash()(lineSegment1.second);
+	//		auto hash21 = Vector<N, S>::Hash()(lineSegment2.first);
+	//		auto hash22 = Vector<N, S>::Hash()(lineSegment2.second);
+	//		return (hash11 == hash21 && hash12 == hash22) ||
+	//			   (hash11 == hash22 && hash12 == hash21);
+	//	}
+	//};
+	//
+	//template< size_t N, size_t N2, Scalar S>
+	//struct LineSegmentArrayEqual
+	//{
+	//	constexpr auto operator()(const std::array<LineSegment<N, S>, N2>& lineSegmentArray1, const std::array<LineSegment<N, S>, N2>& lineSegmentArray2) const noexcept -> bool
+	//	{
+	//		std::cout << "apvv\n";
+	//		// TODO: too sensitive.
+	//		LineSegmentEqual<N, S> vpe;
+	//		return (vpe(lineSegmentArray1[0], lineSegmentArray2[0]) && vpe(lineSegmentArray1[1], lineSegmentArray2[1]) && vpe(lineSegmentArray1[2], lineSegmentArray2[2])) ||
+	//			   (vpe(lineSegmentArray1[0], lineSegmentArray2[1]) && vpe(lineSegmentArray1[1], lineSegmentArray2[0]) && vpe(lineSegmentArray1[2], lineSegmentArray2[2])) ||
+	//			   (vpe(lineSegmentArray1[0], lineSegmentArray2[0]) && vpe(lineSegmentArray1[1], lineSegmentArray2[2]) && vpe(lineSegmentArray1[2], lineSegmentArray2[1])) ||
+	//			   (vpe(lineSegmentArray1[0], lineSegmentArray2[2]) && vpe(lineSegmentArray1[1], lineSegmentArray2[0]) && vpe(lineSegmentArray1[2], lineSegmentArray2[1])) ||
+	//			   (vpe(lineSegmentArray1[0], lineSegmentArray2[1]) && vpe(lineSegmentArray1[1], lineSegmentArray2[2]) && vpe(lineSegmentArray1[2], lineSegmentArray2[0])) ||
+	//			   (vpe(lineSegmentArray1[0], lineSegmentArray2[2]) && vpe(lineSegmentArray1[1], lineSegmentArray2[1]) && vpe(lineSegmentArray1[2], lineSegmentArray2[0]));
+	//	}
+	//};
+	//
+	//template<size_t N, Scalar S>
+	//struct LineSegmentHash
+	//{
+	//	constexpr size_t operator()(const LineSegment<N, S>& lineSegment) const noexcept
+	//	{
+	//		return Vector<N, S>::Hash()(lineSegment.first) ^ Vector<N, S>::Hash()(lineSegment.second);
+	//	}
+	//};
+	//
+	//template<size_t N, size_t N2, Scalar S>
+	//struct LineSegmentArrayHash
+	//{
+	//	constexpr size_t operator()(const std::array<LineSegment<N, S>, N2>& lineSegmentArray) const noexcept
+	//	{
+	//		size_t hash = 0;
+	//		for (uint32_t n = 0; n < N2; n++)
+	//			hash ^= Vector<N, S>::Hash()(lineSegmentArray[n].first) | Vector<N, S>::Hash()(lineSegmentArray[n].second);
+	//		return hash;
+	//	}
+	//};
+	//
+	//using LineSegment3f = LineSegment<3, float>;
+	//using LineSegmentEqual3f = LineSegmentEqual<3, float>;
+	//using LineSegmentArrayEqual3f = LineSegmentArrayEqual<3, 3, float>;
+	//using LineSegmentHash3f = LineSegmentHash<3, float>;
+	//using LineSegmentArrayHash3f = LineSegmentArrayHash<3, 3, float>;
+
 	void Perform()
 	{
 		//constexpr std::array<LineSegment3f, 3> array1{ LineSegment3f{ Vector3f(2, 0, 0), Vector3f(0, 2, 0) }, LineSegment3f{ Vector3f(0, 2, 0), Vector3f(0, 0, 2) }, LineSegment3f{ Vector3f(0, 0, 2), Vector3f(2, 0, 0) } };
@@ -231,8 +227,8 @@ namespace test
 		(
 			0, true, 2.0, 3.0f,
 			4, 5, 6, 7,
-			8, 9, 10, CHAR_MIN,
-			12, 13, 14, UCHAR_MAX
+			8, 9, 10, -128,
+			12, 13, 14, -1
 		);
 
 		Matrix4f b = a;

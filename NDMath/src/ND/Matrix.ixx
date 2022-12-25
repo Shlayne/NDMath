@@ -6,8 +6,7 @@ export module nd.matrix;
 
 import nd.scalar;
 import nd.vector;
-import <iomanip>;
-import <iostream>;
+import std.core;
 
 namespace nd
 {
@@ -28,6 +27,8 @@ using CMT = nd::Matrix<C, R, CT<Scalars...>>;
 // Implementation: Don't export.
 namespace impl
 {
+	// https://stackoverflow.com/questions/31767645/how-to-check-that-all-types-in-variadic-template-are-convertible-to-size-t
+
 	template<bool...>
 	struct bools {};
 

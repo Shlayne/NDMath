@@ -1,10 +1,10 @@
 include "Dependencies/premake/Custom/solutionitems.lua"
 
-workspace "NDSlicing"
+workspace "NDMath"
 	architecture "x86_64"
-	startproject "NDSlicing"
+	startproject "NDMath"
 
-	configurations { "Profile", "Debug", "Release", "Dist" }
+	configurations { "Debug", "Release" }
 
 	solutionitems {
 		-- Visual Studio
@@ -21,8 +21,8 @@ workspace "NDSlicing"
 		"premake5.lua",
 		"Dependencies/Dependencies.lua",
 		"Dependencies/premake/Custom/solutionitems.lua",
-		"Dependencies/premake/Custom/usestdpreproc.lua",
-		
+		"Dependencies/premake/Custom/notyetimplemented.lua",
+
 		-- Misc
 		"README.md"
 	}
@@ -33,8 +33,8 @@ workspace "NDSlicing"
 
 OutputDir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
-include "Dependencies/premake/Custom/usestdpreproc.lua"
+include "Dependencies/premake/Custom/notyetimplemented.lua"
 include "Dependencies/Dependencies.lua"
 
 -- Add any projects here with 'include "__PROJECT_NAME__"'
-include "NDSlicing"
+include "NDMath"

@@ -1,6 +1,6 @@
 export module nd.scalar;
 
-import <concepts>;
+import std.core;
 
 export namespace nd
 {
