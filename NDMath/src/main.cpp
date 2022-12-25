@@ -1,6 +1,6 @@
 import test;
 
-int main()
+auto main() -> int
 {
 	test::Perform();
 	return 0;

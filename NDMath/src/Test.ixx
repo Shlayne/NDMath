@@ -7,20 +7,22 @@ using namespace nd;
 
 export namespace test
 {
-	void Perform()
+	auto Perform() -> void
 	{
-		Matrix<4, 4, signed char> a
+		Matrix4f a
 		(
 			0, true, 2.0, 3.0f,
 			4, 5, 6, 7,
 			8, 9, 10, -128,
-			12, 13, 14, -1
+			0, 13, 14, -1
 		);
 
-		Matrix4f b = a;
+		auto b = Determinant(a);
+		auto c = Inverse(a);
 
 		std::cout << a << '\n' << '\n';
 		std::cout << b << '\n' << '\n';
+		std::cout << c << '\n' << '\n';
 
 		std::cin.get();
 	}

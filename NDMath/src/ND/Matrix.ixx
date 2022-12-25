@@ -55,6 +55,7 @@ export namespace nd
 		template<Scalar S2, std::enable_if_t<std::is_convertible_v<S2, S>, int> = 0>
 		constexpr Matrix(const S2& scalar) noexcept;
 
+		// NOTE: Elements are in order (col0, row0), (col1, row0), (col2, row0), ... , (col0, row1), ...
 		// Collides with copy constructor if requires is used instead of std::enable_if_t.
 		template<Scalar... S2s, std::enable_if_t<sizeof...(S2s) == R * C && impl::all_true_v<std::is_convertible_v<S2s, S>...>, int> = 0>
 		constexpr Matrix(S2s&&... scalars) noexcept;
@@ -128,6 +129,9 @@ export namespace nd
 
 		template<size_t R2> requires(R2 < R)
 		constexpr auto Row() const noexcept -> Vector<C, S>;
+
+		constexpr auto Col(size_t C2) const noexcept -> Vector<C, S>;
+		constexpr auto Row(size_t R2) const noexcept -> Vector<C, S>;
 	private:
 		template<size_t C2, size_t R2, Scalar S2, Scalar... Scalars>
 		constexpr auto Fill(const S2& scalar, Scalars&&... scalars) -> void;
@@ -157,9 +161,8 @@ export namespace nd
 	template<size_t C, size_t R, Scalar S, size_t C2, size_t R2> requires(C < C2 && R < R2 && C2 > 1 && R2 > 1)
 	constexpr auto Submatrix(const Matrix<C2, R2, S>& matrix) noexcept -> Matrix<C2 - 1, R2 - 1, S>;
 
-	template<size_t C2, size_t R2, Scalar S>
-	constexpr auto Submatrix(size_t C, size_t R, const Matrix<C2, R2, S>& matrix) noexcept -> Matrix<C2 - 1, R2 - 1, S>
-		requires(C < C2 && R < R2 && C2 > 1 && R2 > 1);
+	template<size_t C2, size_t R2, Scalar S> requires(/*C < C2 && R < R2 && */C2 > 1 && R2 > 1)
+	constexpr auto Submatrix(size_t C, size_t R, const Matrix<C2, R2, S>& matrix) noexcept -> Matrix<C2 - 1, R2 - 1, S>;
 
 	template<size_t CR, Scalar S>
 	constexpr auto Trace(const Matrix<CR, CR, S>& matrix) noexcept -> S;
@@ -193,8 +196,8 @@ export namespace nd
 	constexpr auto Rotate(const Matrix<CR, CR, S>& matrix, const S2& radians) -> CMT<CR, CR, S, S2>;
 
 	template<size_t CR, Scalar S, Scalar S2>
-	constexpr auto Rotate(size_t A1, size_t A2, const Matrix<CR, CR, S>& matrix, const S2& radians) -> CMT<CR, CR, S, S2>
-		requires(A1 < CR - 1 && A2 < CR - 1 && A1 != A2 && std::is_convertible_v<S2, S>);
+		requires(/*A1 < CR - 1 && A2 < CR - 1 && A1 != A2 && */std::is_convertible_v<S2, S>)
+	constexpr auto Rotate(size_t A1, size_t A2, const Matrix<CR, CR, S>& matrix, const S2& radians) -> CMT<CR, CR, S, S2>;
 
 	template<size_t CR, Scalar S, Scalar S2> requires(std::is_convertible_v<S2, S>)
 	constexpr auto Scale(const Matrix<CR, CR, S>& matrix, const Vector<CR - 1, S2>& scale) -> CMT<CR, CR, S, S2>;
@@ -393,7 +396,7 @@ export namespace nd
 		CMT<C2, R, S, S2> result = CT<S, S2>();
 		for (size_t i = 0; i < C2; i++)
 			for (size_t j = 0; j < C; j++)
-				result[i] += CT<S, S2>(m_Scalars[j]) * CT<S, S2>(matrix[i][j]);
+				result[i] += CVT<R, S, S2>(m_Scalars[j]) * CT<S, S2>(matrix[i][j]);
 		return result;
 	}
 
@@ -491,6 +494,25 @@ export namespace nd
 	}
 
 	template<size_t C, size_t R, Scalar S> requires(C > 0 && R > 0)
+	constexpr auto Matrix<C, R, S>::Col(size_t C2) const noexcept -> Vector<C, S>
+	{
+		__assume(C2 < C);
+
+		return m_Scalars[C2];
+	}
+
+	template<size_t C, size_t R, Scalar S> requires(C > 0 && R > 0)
+	constexpr auto Matrix<C, R, S>::Row(size_t R2) const noexcept -> Vector<C, S>
+	{
+		__assume(R2 < R);
+
+		Vector<C, S> row;
+		for (size_t c = 0; c < C; c++)
+			row[c] = m_Scalars[c][R2];
+		return row;
+	}
+
+	template<size_t C, size_t R, Scalar S> requires(C > 0 && R > 0)
 	template<size_t C2, size_t R2, Scalar S2, Scalar... Scalars>
 	constexpr auto Matrix<C, R, S>::Fill(const S2& scalar, Scalars&&... scalars) -> void
 	{
@@ -562,10 +584,10 @@ export namespace nd
 	}
 	
 	template<size_t C2, size_t R2, Scalar S>
+		requires(/*C < C2 && R < R2 && */C2 > 1 && R2 > 1)
 	constexpr auto Submatrix(size_t C, size_t R, const Matrix<C2, R2, S>& matrix) noexcept -> Matrix<C2 - 1, R2 - 1, S>
-		requires(C < C2 && R < R2 && C2 > 1 && R2 > 1)
 	{
-		//assert((C < C2) && (R < R2));
+		__assume(C < C2 && R < R2);
 
 		Matrix<C2 - 1, R2 - 1, S> result = S();
 
@@ -694,10 +716,10 @@ export namespace nd
 	}
 	
 	template<size_t CR, Scalar S, Scalar S2>
+		requires(/*A1 < CR - 1 && A2 < CR - 1 && A1 != A2 && */std::is_convertible_v<S2, S>)
 	constexpr auto Rotate(size_t A1, size_t A2, const Matrix<CR, CR, S>& matrix, const S2& radians) -> CMT<CR, CR, S, S2>
-		requires(A1 < CR - 1 && A2 < CR - 1 && A1 != A2 && std::is_convertible_v<S2, S>)
 	{
-		//assert(A1 < CR - 1 && A2 < CR - 1 && A1 != A2);
+		__assume(A1 < CR - 1 && A2 < CR - 1 && A1 != A2);
 
 		CMT<CR, CR, S, S2> rotation;
 

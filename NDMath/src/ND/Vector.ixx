@@ -94,6 +94,12 @@ export namespace nd
 		constexpr auto operator+() const noexcept -> Vector<N, S>;
 		constexpr auto operator-() const noexcept -> Vector<N, S>;
 	public:
+		template<size_t N2> requires(N2 < N)
+		constexpr auto at() noexcept -> S&;
+
+		template<size_t N2> requires(N2 < N)
+		constexpr auto at() const noexcept -> const S&;
+
 		constexpr auto operator[](size_t index) noexcept -> S&;
 		constexpr auto operator[](size_t index) const noexcept -> const S&;
 	public:
@@ -314,7 +320,7 @@ export namespace nd
 	template<Scalar S2> requires(std::is_convertible_v<S2, S>)
 	constexpr auto Vector<N, S>::operator+(const S2& scalar) const noexcept -> CVT<N, S, S2>
 	{
-		return CVT<N, S, S2>(*this) += scalar;
+		return CVT<N, S, S2>(*this) += CT<S, S2>(scalar);
 	}
 
 	template<size_t N, Scalar S> requires(N > 0)
@@ -330,7 +336,7 @@ export namespace nd
 	template<size_t N2, Scalar S2> requires(N2 <= N && std::is_convertible_v<S2, S>)
 	constexpr auto Vector<N, S>::operator+(const Vector<N2, S2>& vector) const noexcept -> CVT<N, S, S2>
 	{
-		return CVT<N, S, S2>(*this) += vector;
+		return CVT<N, S, S2>(*this) += CVT<N, S, S2>(vector);
 	}
 
 	template<size_t N, Scalar S> requires(N > 0)
@@ -346,7 +352,7 @@ export namespace nd
 	template<Scalar S2> requires(std::is_convertible_v<S2, S>)
 	constexpr auto Vector<N, S>::operator-(const S2& scalar) const noexcept -> CVT<N, S, S2>
 	{
-		return CVT<N, S, S2>(*this) -= scalar;
+		return CVT<N, S, S2>(*this) -= CT<S, S2>(scalar);
 	}
 
 	template<size_t N, Scalar S> requires(N > 0)
@@ -362,7 +368,7 @@ export namespace nd
 	template<size_t N2, Scalar S2> requires(N2 <= N && std::is_convertible_v<S2, S>)
 	constexpr auto Vector<N, S>::operator-(const Vector<N2, S2>& vector) const noexcept -> CVT<N, S, S2>
 	{
-		return CVT<N, S, S2>(*this) -= vector;
+		return CVT<N, S, S2>(*this) -= CVT<N, S, S2>(vector);
 	}
 
 	template<size_t N, Scalar S> requires(N > 0)
@@ -378,7 +384,7 @@ export namespace nd
 	template<Scalar S2> requires(std::is_convertible_v<S2, S>)
 	constexpr auto Vector<N, S>::operator*(const S2& scalar) const noexcept -> CVT<N, S, S2>
 	{
-		return CVT<N, S, S2>(*this) *= scalar;
+		return CVT<N, S, S2>(*this) *= CT<S, S2>(scalar);
 	}
 
 	template<size_t N, Scalar S> requires(N > 0)
@@ -394,7 +400,7 @@ export namespace nd
 	template<size_t N2, Scalar S2> requires(N2 <= N && std::is_convertible_v<S2, S>)
 	constexpr auto Vector<N, S>::operator*(const Vector<N2, S2>& vector) const noexcept -> CVT<N, S, S2>
 	{
-		return CVT<N, S, S2>(*this) *= vector;
+		return CVT<N, S, S2>(*this) *= CVT<N, S, S2>(vector);
 	}
 
 	template<size_t N, Scalar S> requires(N > 0)
@@ -410,7 +416,7 @@ export namespace nd
 	template<Scalar S2> requires(std::is_convertible_v<S2, S>)
 	constexpr auto Vector<N, S>::operator/(const S2& scalar) const noexcept -> CVT<N, S, S2>
 	{
-		return CVT<N, S, S2>(*this) /= scalar;
+		return CVT<N, S, S2>(*this) /= CT<S, S2>(scalar);
 	}
 
 	template<size_t N, Scalar S> requires(N > 0)
@@ -426,7 +432,7 @@ export namespace nd
 	template<size_t N2, Scalar S2> requires(N2 <= N && std::is_convertible_v<S2, S>)
 	constexpr auto Vector<N, S>::operator/(const Vector<N2, S2>& vector) const noexcept -> CVT<N, S, S2>
 	{
-		return CVT<N, S, S2>(*this) /= vector;
+		return CVT<N, S, S2>(*this) /= CVT<N, S, S2>(vector);
 	}
 
 	template<size_t N, Scalar S> requires(N > 0)
@@ -454,14 +460,30 @@ export namespace nd
 	}
 
 	template<size_t N, Scalar S> requires(N > 0)
+	template<size_t N2> requires(N2 < N)
+	constexpr auto nd::Vector<N, S>::at() noexcept -> S&
+	{
+		return m_Scalars[N2];
+	}
+
+	template<size_t N, Scalar S> requires(N > 0)
+	template<size_t N2> requires(N2 < N)
+	constexpr auto nd::Vector<N, S>::at() const noexcept -> const S&
+	{
+		return m_Scalars[N2];
+	}
+
+	template<size_t N, Scalar S> requires(N > 0)
 	constexpr auto Vector<N, S>::operator[](size_t index) noexcept -> S&
 	{
+		__assume(index < N);
 		return m_Scalars[index];
 	}
 
 	template<size_t N, Scalar S> requires(N > 0)
 	constexpr auto Vector<N, S>::operator[](size_t index) const noexcept -> const S&
 	{
+		__assume(index < N);
 		return m_Scalars[index];
 	}
 
@@ -481,18 +503,18 @@ export namespace nd
 	{
 		size_t n = 0;
 		for (; n < gcem::min(N, N2); n++)
-			if (m_Scalars[n] != S(vector[n]))
+			if (CT<S, S2>(m_Scalars[n]) != CT<S, S2>(vector[n]))
 				return false;
 		if constexpr (N < N2)
 		{
 			for (; n < N2; n++)
-				if (vector[n] != S2())
+				if (CT<S, S2>(vector[n]) != CT<S, S2>())
 					return false;
 		}
 		else if constexpr (N2 < N)
 		{
 			for (; n < N; n++)
-				if (m_Scalars[n] != S())
+				if (CT<S, S2>(m_Scalars[n]) != CT<S, S2>())
 					return false;
 		}
 
@@ -505,18 +527,18 @@ export namespace nd
 	{
 		size_t n = 0;
 		for (; n < gcem::min(N, N2); n++)
-			if (m_Scalars[n] == S(vector[n]))
+			if (CT<S, S2>(m_Scalars[n]) == CT<S, S2>(vector[n]))
 				return false;
 		if constexpr (N < N2)
 		{
 			for (; n < N2; n++)
-				if (vector[n] == S2())
+				if (CT<S, S2>(vector[n]) == CT<S, S2>())
 					return false;
 		}
 		else if constexpr (N2 < N)
 		{
 			for (; n < N; n++)
-				if (m_Scalars[n] == S())
+				if (CT<S, S2>(m_Scalars[n]) == CT<S, S2>())
 					return false;
 		}
 
@@ -545,32 +567,32 @@ export namespace nd
 	template<size_t N, Scalar S, Scalar S2> requires(N > 0 && std::is_convertible_v<S2, S>)
 	constexpr auto operator+(const S2& scalar, const Vector<N, S>& vector) noexcept -> CVT<N, S, S2>
 	{
-		return CVT<N, S, S2>(scalar) += vector;
+		return CVT<N, S, S2>(scalar) += CVT<N, S, S2>(vector);
 	}
 
 	template<size_t N, Scalar S, Scalar S2> requires(N > 0 && std::is_convertible_v<S2, S>)
 	constexpr auto operator-(const S2& scalar, const Vector<N, S>& vector) noexcept -> CVT<N, S, S2>
 	{
-		return CVT<N, S, S2>(scalar) -= vector;
+		return CVT<N, S, S2>(scalar) -= CVT<N, S, S2>(vector);
 	}
 
 	template<size_t N, Scalar S, Scalar S2> requires(N > 0 && std::is_convertible_v<S2, S>)
 	constexpr auto operator*(const S2& scalar, const Vector<N, S>& vector) noexcept -> CVT<N, S, S2>
 	{
-		return CVT<N, S, S2>(scalar) *= vector;
+		return CVT<N, S, S2>(scalar) *= CVT<N, S, S2>(vector);
 	}
 
 	template<size_t N, Scalar S, Scalar S2> requires(N > 0 && std::is_convertible_v<S2, S>)
 	constexpr auto operator/(const S2& scalar, const Vector<N, S>& vector) noexcept -> CVT<N, S, S2>
 	{
-		return CVT<N, S, S2>(scalar) /= vector;
+		return CVT<N, S, S2>(scalar) /= CVT<N, S, S2>(vector);
 	}
 
 	template<size_t N, Scalar S, Scalar S2> requires(N > 0 && std::is_convertible_v<S2, S>)
 	constexpr auto Dot(const Vector<N, S>& vector1, const Vector<N, S2>& vector2) noexcept -> CT<S, S2>
 	{
 		CT<S, S2> dot = CT<S, S2>();
-		CVT<N, S, S2> product = vector1 * vector2;
+		CVT<N, S, S2> product = CVT<N, S, S2>(vector1) * CVT<N, S, S2>(vector2);
 		for (size_t n = 0; n < N; n++)
 			dot += product[n];
 		return dot;
