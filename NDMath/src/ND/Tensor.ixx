@@ -14,7 +14,7 @@ import nd.impl;
 namespace nd::impl
 {
 	template<Dimension N = 1, Dimension... Ns>
-	struct gt0 : gt0<Ns...>
+	struct gt0
 	{
 		inline static constexpr bool value{N > 0 && gt0<Ns...>::value};
 	};
