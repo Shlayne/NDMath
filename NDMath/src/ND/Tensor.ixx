@@ -6,24 +6,33 @@ export module nd.tensor;
 
 import nd.dimension;
 import nd.scalar;
+import nd.impl;
 
 #define _ND ::nd::
 #define _IMPL ::nd::impl::
 
-namespace nd
+namespace nd::impl
 {
-	template<Scalar S, Dimension R, Dimension N = 0, Dimension... Ns>
-	requires((!R && !N && !sizeof...(Ns)) || (R > 0 && N > 0 && sizeof...(Ns) == R - 1))
-	struct Tensor;
-}
+	template<Dimension N = 1, Dimension... Ns>
+	struct gt0 : gt0<Ns...>
+	{
+		inline static constexpr bool value{N > 0 && gt0<Ns...>::value};
+	};
 
-template<_ND Scalar... Scalars>
-using CT = _STD common_type_t<Scalars...>;
+	template<>
+	struct gt0<1>
+	{
+		inline static constexpr bool value{true};
+	};
+
+	template<Dimension... Ns>
+	inline static constexpr bool gt0_v = gt0<Ns...>::value;
+}
 
 export namespace nd
 {
-	template<Scalar S, Dimension R, Dimension N, Dimension... Ns>
-	requires((!R && !N && !sizeof...(Ns)) || (R > 0 && N > 0 && sizeof...(Ns) == R - 1))
+	template<Scalar S, Dimension R, Dimension N = 0, Dimension... Ns>
+	requires((R == 0 && N == 0 && sizeof...(Ns) == 0) || (R > 0 && N > 0 && sizeof...(Ns) == R - 1 && _IMPL gt0_v<Ns...>))
 	struct Tensor
 	{
 	public:
@@ -31,7 +40,7 @@ export namespace nd
 	public:
 		constexpr auto operator[](Dimension n) noexcept -> Tensor<S, R - 1, Ns...>&;
 		constexpr auto operator[](Dimension n) const noexcept -> const Tensor<S, R - 1, Ns...>&;
-	private:
+	protected:
 		Tensor<S, R - 1, Ns...> m_Scalars[N]{Tensor<S, R - 1, Ns...>{}};
 	};
 
@@ -39,10 +48,11 @@ export namespace nd
 	struct Tensor<S, 0>
 	{
 	public:
-		constexpr Tensor() noexcept = default;
+		constexpr Tensor(S scalar = {}) noexcept;
 	public:
-		constexpr operator S() const noexcept;
-	private:
+		constexpr operator S&() noexcept;
+		constexpr operator const S&() const noexcept;
+	protected:
 		S m_Scalar{};
 	};
 
@@ -51,35 +61,9 @@ export namespace nd
 	// Static Methods
 
 	// Aliases
-	template<Scalar S, Dimension N>
-	using Vector = Tensor<S, 1, N>;
 
-	template<Dimension N>
-	using VectorNf = Vector<float, N>;
-
-	using Vector1f = VectorNf<1>;
-	using Vector2f = VectorNf<2>;
-	using Vector3f = VectorNf<3>;
-	using Vector4f = VectorNf<4>;
-	using Vector5f = VectorNf<5>;
-	using Vector6f = VectorNf<6>;
-	using Vector7f = VectorNf<7>;
-	using Vector8f = VectorNf<8>;
-
-	template<Scalar S, Dimension C, Dimension R = C>
-	using Matrix = Tensor<S, 2, C, R>;
-
-	template<Dimension C, Dimension R = C>
-	using MatrixCRf = Matrix<float, C, R>;
-
-	using Matrix1f = MatrixCRf<1>;
-	using Matrix2f = MatrixCRf<2>;
-	using Matrix3f = MatrixCRf<3>;
-	using Matrix4f = MatrixCRf<4>;
-	using Matrix5f = MatrixCRf<5>;
-	using Matrix6f = MatrixCRf<6>;
-	using Matrix7f = MatrixCRf<7>;
-	using Matrix8f = MatrixCRf<8>;
+	//template<Scalar S, Dimension C, Dimension R = C>
+	//using Matrix = Tensor<S, 2, C, R>;
 }
 
 // Implementation: Don't export.
@@ -91,7 +75,7 @@ namespace nd::impl
 export namespace nd
 {
 	template<Scalar S, Dimension R, Dimension N, Dimension... Ns>
-	requires((!R && !N && !sizeof...(Ns)) || (R > 0 && N > 0 && sizeof...(Ns) == R - 1))
+	requires((R == 0 && N == 0 && sizeof...(Ns) == 0) || (R > 0 && N > 0 && sizeof...(Ns) == R - 1 && _IMPL gt0_v<Ns...>))
 	constexpr auto Tensor<S, R, N, Ns...>::operator[](Dimension n) noexcept -> Tensor<S, R - 1, Ns...>&
 	{
 		__assume(n < N);
@@ -99,7 +83,7 @@ export namespace nd
 	}
 
 	template<Scalar S, Dimension R, Dimension N, Dimension... Ns>
-	requires((!R && !N && !sizeof...(Ns)) || (R > 0 && N > 0 && sizeof...(Ns) == R - 1))
+	requires((R == 0 && N == 0 && sizeof...(Ns) == 0) || (R > 0 && N > 0 && sizeof...(Ns) == R - 1 && _IMPL gt0_v<Ns...>))
 	constexpr auto Tensor<S, R, N, Ns...>::operator[](Dimension n) const noexcept -> const Tensor<S, R - 1, Ns...>&
 	{
 		__assume(n < N);
@@ -109,7 +93,20 @@ export namespace nd
 	// Tensor<0, S>
 
 	template<Scalar S>
-	constexpr Tensor<S, 0>::operator S() const noexcept
+	constexpr Tensor<S, 0>::Tensor(S scalar) noexcept
+		: m_Scalar{scalar}
+	{
+
+	}
+
+	template<Scalar S>
+	constexpr Tensor<S, 0>::operator S&() noexcept
+	{
+		return m_Scalar;
+	}
+
+	template<Scalar S>
+	constexpr Tensor<S, 0>::operator const S&() const noexcept
 	{
 		return m_Scalar;
 	}

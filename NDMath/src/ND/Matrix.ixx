@@ -6,44 +6,29 @@ export module nd.matrix;
 
 import nd.dimension;
 import nd.scalar;
-import nd.vector;
 import nd.impl;
+import nd.tensor;
+import nd.vector;
 import <iomanip>;
 import <iostream>;
 
 #define _ND ::nd::
 #define _IMPL ::nd::impl::
 
-namespace nd
-{
-	template<Dimension C, Dimension R, Scalar S> requires(C > 0 && R > 0)
-	struct Matrix;
-}
-
-template<_ND Scalar... Scalars>
-using CT = _STD common_type_t<Scalars...>;
-
-// This is so small, I'm fine with duplicating it.
-template<_ND Dimension N, _ND Scalar... Scalars>
-using CVT = _ND Vector<N, CT<Scalars...>>;
-
-template<_ND Dimension C, _ND Dimension R, _ND Scalar... Scalars>
-using CMT = _ND Matrix<C, R, CT<Scalars...>>;
-
 export namespace nd
 {
-	template<Dimension C, Dimension R, Scalar S> requires(C > 0 && R > 0)
-	struct Matrix
+	template<Scalar S, Dimension C, Dimension R>
+	struct Matrix : public Tensor<S, 2, C, R>
 	{
 	public:
 		constexpr Matrix() noexcept;
 
-		template<Dimension C2, Dimension R2, Scalar S2> requires(C2 <= C && R2 <= R && _STD is_convertible_v<S2, S>)
-		constexpr Matrix(const Matrix<C2, R2, S2>& matrix) noexcept;
+		template<Scalar S2, Dimension C2, Dimension R2> requires(C2 <= C && R2 <= R && _STD is_convertible_v<S2, S>)
+		constexpr Matrix(const Matrix<S2, C2, R2>& matrix) noexcept;
 
 		// Collides with copy constructor if requires is used instead of _STD enable_if_t.
 		template<Scalar S2, _STD enable_if_t<_STD is_convertible_v<S2, S>, int> = 0>
-		constexpr Matrix(const S2& scalar) noexcept;
+		constexpr Matrix(S2 scalar) noexcept;
 
 		// NOTE: Elements are in order (col0, row0), (col1, row0), (col2, row0), ... , (col0, row1), ...
 		// Collides with copy constructor if requires is used instead of _STD enable_if_t.
@@ -52,156 +37,157 @@ export namespace nd
 
 		// Collides with copy operator= if requires is used instead of _STD enable_if_t.
 		template<Scalar S2, _STD enable_if_t<_STD is_convertible_v<S2, S>, int> = 0>
-		constexpr auto operator=(const S2& scalar) noexcept -> Matrix<C, R, S>&;
+		constexpr auto operator=(S2 scalar) noexcept -> Matrix<S, C, R>&;
 
-		template<Dimension C2, Dimension R2, Scalar S2> requires(C2 <= C && R2 <= R && _STD is_convertible_v<S2, S>)
-		constexpr auto operator=(const Matrix<C2, R2, S2>& matrix) noexcept -> Matrix<C, R, S>&;
+		template<Scalar S2, Dimension C2, Dimension R2> requires(C2 <= C && R2 <= R && _STD is_convertible_v<S2, S>)
+		constexpr auto operator=(const Matrix<S2, C2, R2>& matrix) noexcept -> Matrix<S, C, R>&;
 	public:
 		template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-		constexpr auto operator+(const S2& scalar) const noexcept -> CMT<C, R, S, S2>;
+		constexpr auto operator+(S2 scalar) const noexcept -> Matrix<_IMPL CT<S, S2>, C, R>;
 
 		template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-		constexpr auto operator+=(const S2& scalar) noexcept -> Matrix<C, R, S>&;
+		constexpr auto operator+=(S2 scalar) noexcept -> Matrix<S, C, R>&;
 
 		template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-		constexpr auto operator+(const Matrix<C, R, S2>& matrix) const noexcept -> CMT<C, R, S, S2>;
+		constexpr auto operator+(const Matrix<S2, C, R>& matrix) const noexcept -> Matrix<_IMPL CT<S, S2>, C, R>;
 
 		template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-		constexpr auto operator+=(const Matrix<C, R, S2>& matrix) noexcept -> Matrix<C, R, S>&;
+		constexpr auto operator+=(const Matrix<S2, C, R>& matrix) noexcept -> Matrix<S, C, R>&;
 	public:
 		template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-		constexpr auto operator-(const S2& scalar) const noexcept -> CMT<C, R, S, S2>;
+		constexpr auto operator-(S2 scalar) const noexcept -> Matrix<_IMPL CT<S, S2>, C, R>;
 
 		template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-		constexpr auto operator-=(const S2& scalar) noexcept -> Matrix<C, R, S>&;
+		constexpr auto operator-=(S2 scalar) noexcept -> Matrix<S, C, R>&;
 
 		template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-		constexpr auto operator-(const Matrix<C, R, S2>& matrix) const noexcept -> CMT<C, R, S, S2>;
+		constexpr auto operator-(const Matrix<S2, C, R>& matrix) const noexcept -> Matrix<_IMPL CT<S, S2>, C, R>;
 
 		template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-		constexpr auto operator-=(const Matrix<C, R, S2>& matrix) noexcept -> Matrix<C, R, S>&;
+		constexpr auto operator-=(const Matrix<S2, C, R>& matrix) noexcept -> Matrix<S, C, R>&;
 	public:
 		template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-		constexpr auto operator*(const S2& scalar) const noexcept -> CMT<C, R, S, S2>;
+		constexpr auto operator*(S2 scalar) const noexcept -> Matrix<_IMPL CT<S, S2>, C, R>;
 
 		template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-		constexpr auto operator*=(const S2& scalar) noexcept -> Matrix<C, R, S>&;
+		constexpr auto operator*=(S2 scalar) noexcept -> Matrix<S, C, R>&;
 
-		template<Dimension C2, Scalar S2> requires(_STD is_convertible_v<S2, S>)
-		constexpr auto operator*(const Matrix<C2, C, S2>& matrix) const noexcept -> CMT<C2, R, S, S2>;
+		template<Scalar S2, Dimension C2> requires(_STD is_convertible_v<S2, S>)
+		constexpr auto operator*(const Matrix<S2, C2, C>& matrix) const noexcept -> Matrix<_IMPL CT<S, S2>, C2, R>;
 
 		template<Scalar S2> requires(R == C && _STD is_convertible_v<S2, S>)
-		constexpr auto operator*=(const Matrix<C, C, S2>& matrix) noexcept -> Matrix<C, R, S>&;
+		constexpr auto operator*=(const Matrix<S2, C, C>& matrix) noexcept -> Matrix<S, C, R>&;
 	public:
 		template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-		constexpr auto operator/(const S2& scalar) const noexcept -> CMT<C, R, S, S2>;
+		constexpr auto operator/(S2 scalar) const noexcept -> Matrix<_IMPL CT<S, S2>, C, R>;
 
 		template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-		constexpr auto operator/=(const S2& scalar) noexcept -> Matrix<C, R, S>&;
-
-		template<Scalar S2> requires(R == C && _STD is_convertible_v<S2, S>)
-		constexpr auto operator/(const Matrix<C, C, S2>& matrix) const noexcept -> CMT<C, R, S, S2>;
+		constexpr auto operator/=(S2 scalar) noexcept -> Matrix<S, C, R>&;
 
 		template<Scalar S2> requires(R == C && _STD is_convertible_v<S2, S>)
-		constexpr auto operator/=(const Matrix<C, C, S2>& matrix) noexcept -> Matrix<C, R, S>&;
+		constexpr auto operator/(const Matrix<S2, C, C>& matrix) const noexcept -> Matrix<_IMPL CT<S, S2>, C, R>;
+
+		template<Scalar S2> requires(R == C && _STD is_convertible_v<S2, S>)
+		constexpr auto operator/=(const Matrix<S2, C, C>& matrix) noexcept -> Matrix<S, C, R>&;
 	public:
 		template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-		constexpr auto operator*(const Vector<C, S2>& vector) const noexcept -> CVT<R, S, S2>;
+		constexpr auto operator*(const Vector<S2, C>& vector) const noexcept -> Vector<_IMPL CT<S, S2>, R>;
 	public:
-		constexpr auto operator+() const noexcept -> Matrix<C, R, S>;
-		constexpr auto operator-() const noexcept -> Matrix<C, R, S>;
+		constexpr auto operator+() const noexcept -> Matrix<S, C, R>;
+		constexpr auto operator-() const noexcept -> Matrix<S, C, R>;
 	public:
-		constexpr auto operator[](Dimension col) noexcept -> Vector<R, S>&;
-		constexpr auto operator[](Dimension col) const noexcept -> const Vector<R, S>&;
+		//constexpr auto operator[](Dimension col) noexcept -> Vector<S, R>&;
+		//constexpr auto operator[](Dimension col) const noexcept -> const Vector<S, R>&;
+		using Tensor<S, 2, C, R>::operator[];
 
 		template<Dimension C2> requires(C2 < C)
-		constexpr auto Col() const noexcept -> Vector<C, S>;
+		constexpr auto Col() const noexcept -> Vector<S, R>;
 
 		template<Dimension R2> requires(R2 < R)
-		constexpr auto Row() const noexcept -> Vector<C, S>;
+		constexpr auto Row() const noexcept -> Vector<S, C>;
 
-		constexpr auto Col(Dimension C2) const noexcept -> Vector<C, S>;
-		constexpr auto Row(Dimension R2) const noexcept -> Vector<C, S>;
+		constexpr auto Col(Dimension C2) const noexcept -> Vector<S, R>;
+		constexpr auto Row(Dimension R2) const noexcept -> Vector<S, C>;
 	private:
 		template<Dimension C2, Dimension R2, Scalar S2, Scalar... Scalars>
-		constexpr auto Fill(const S2& scalar, Scalars&&... scalars) -> void;
+		constexpr auto Fill(S2 scalar, Scalars&&... scalars) -> void;
 	private:
-		Vector<R, S> m_Scalars[C]{Vector<R, S>{}};
+		using Tensor<S, 2, C, R>::m_Scalars;
 	};
 
 	// External Operators
 
-	template<Dimension C, Dimension R, Scalar S, Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto operator+(const S2& scalar, const Matrix<C, R, S>& matrix) noexcept -> CMT<C, R, S, S2>;
+	template<Scalar S, Dimension C, Dimension R, Scalar S2> requires(_STD is_convertible_v<S2, S>)
+	constexpr auto operator+(S2 scalar, const Matrix<S, C, R>& matrix) noexcept -> Matrix<_IMPL CT<S, S2>, C, R>;
 
-	template<Dimension C, Dimension R, Scalar S, Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto operator-(const S2& scalar, const Matrix<C, R, S>& matrix) noexcept -> CMT<C, R, S, S2>;
+	template<Scalar S, Dimension C, Dimension R, Scalar S2> requires(_STD is_convertible_v<S2, S>)
+	constexpr auto operator-(S2 scalar, const Matrix<S, C, R>& matrix) noexcept -> Matrix<_IMPL CT<S, S2>, C, R>;
 
-	template<Dimension C, Dimension R, Scalar S, Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto operator*(const S2& scalar, const Matrix<C, R, S>& matrix) noexcept -> CMT<C, R, S, S2>;
+	template<Scalar S, Dimension C, Dimension R, Scalar S2> requires(_STD is_convertible_v<S2, S>)
+	constexpr auto operator*(S2 scalar, const Matrix<S, C, R>& matrix) noexcept -> Matrix<_IMPL CT<S, S2>, C, R>;
 
-	template<Dimension CR, Scalar S, Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto operator/(const S2& scalar, const Matrix<CR, CR, S>& matrix) noexcept -> CMT<CR, CR, S, S2>;
+	template<Scalar S, Dimension CR, Scalar S2> requires(_STD is_convertible_v<S2, S>)
+	constexpr auto operator/(S2 scalar, const Matrix<S, CR, CR>& matrix) noexcept -> Matrix<_IMPL CT<S, S2>, CR, CR>;
 
-	template<Dimension C, Dimension R, Scalar S, Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto operator*(const Vector<R, S2>& vector, const Matrix<C, R, S>& matrix) noexcept -> CVT<C, S, S2>;
+	template<Scalar S, Dimension C, Dimension R, Scalar S2> requires(_STD is_convertible_v<S2, S>)
+	constexpr auto operator*(const Vector<S2, R>& vector, const Matrix<S, C, R>& matrix) noexcept -> Vector<_IMPL CT<S, S2>, C>;
 
 	// Static Methods
 
-	template<Dimension C, Dimension R, Scalar S, Dimension C2, Dimension R2> requires(C < C2 && R < R2 && C2 > 1 && R2 > 1)
-	constexpr auto Submatrix(const Matrix<C2, R2, S>& matrix) noexcept -> Matrix<C2 - 1, R2 - 1, S>;
+	template<Scalar S, Dimension C, Dimension R, Dimension C2, Dimension R2> requires(C < C2 && R < R2 && C2 > 1 && R2 > 1)
+	constexpr auto Submatrix(const Matrix<S, C2, R2>& matrix) noexcept -> Matrix<S, C2 - 1, R2 - 1>;
 
-	template<Dimension C2, Dimension R2, Scalar S> requires(/*C < C2 && R < R2 && */C2 > 1 && R2 > 1)
-	constexpr auto Submatrix(Dimension C, Dimension R, const Matrix<C2, R2, S>& matrix) noexcept -> Matrix<C2 - 1, R2 - 1, S>;
+	template<Scalar S, Dimension C2, Dimension R2> requires(/*C < C2 && R < R2 && */C2 > 1 && R2 > 1)
+	constexpr auto Submatrix(Dimension C, Dimension R, const Matrix<S, C2, R2>& matrix) noexcept -> Matrix<S, C2 - 1, R2 - 1>;
 
-	template<Dimension CR, Scalar S>
-	constexpr auto Trace(const Matrix<CR, CR, S>& matrix) noexcept -> S;
+	template<Scalar S, Dimension CR>
+	constexpr auto Trace(const Matrix<S, CR, CR>& matrix) noexcept -> S;
 
-	template<Dimension CR, Scalar S>
-	constexpr auto Determinant(const Matrix<CR, CR, S>& matrix) noexcept -> S;
+	template<Scalar S, Dimension CR>
+	constexpr auto Determinant(const Matrix<S, CR, CR>& matrix) noexcept -> S;
 
-	template<Dimension C, Dimension R, Scalar S>
-	constexpr auto Transpose(const Matrix<C, R, S>& matrix) noexcept -> Matrix<R, C, S>;
+	template<Scalar S, Dimension C, Dimension R>
+	constexpr auto Transpose(const Matrix<S, C, R>& matrix) noexcept -> Matrix<S, R, C>;
 
-	template<Dimension CR, Scalar S>
-	constexpr auto Minors(const Matrix<CR, CR, S>& matrix) noexcept -> Matrix<CR, CR, S>;
+	template<Scalar S, Dimension CR>
+	constexpr auto Minors(const Matrix<S, CR, CR>& matrix) noexcept -> Matrix<S, CR, CR>;
 
-	template<Dimension CR, Scalar S>
-	constexpr auto Cofactors(const Matrix<CR, CR, S>& matrix) noexcept -> Matrix<CR, CR, S>;
+	template<Scalar S, Dimension CR>
+	constexpr auto Cofactors(const Matrix<S, CR, CR>& matrix) noexcept -> Matrix<S, CR, CR>;
 
-	template<Dimension CR, Scalar S>
-	constexpr auto Adjugate(const Matrix<CR, CR, S>& matrix) noexcept -> Matrix<CR, CR, S>;
+	template<Scalar S, Dimension CR>
+	constexpr auto Adjugate(const Matrix<S, CR, CR>& matrix) noexcept -> Matrix<S, CR, CR>;
 
-	template<Dimension CR, Scalar S>
-	constexpr auto Inverse(const Matrix<CR, CR, S>& matrix) noexcept -> Matrix<CR, CR, S>;
+	template<Scalar S, Dimension CR>
+	constexpr auto Inverse(const Matrix<S, CR, CR>& matrix) noexcept -> Matrix<S, CR, CR>;
 
-	template<Dimension CR, Scalar S, Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto Inverse(const Matrix<CR, CR, S>& matrix, const S2& determinant) noexcept -> CMT<CR, CR, S, S2>;
+	template<Scalar S, Dimension CR, Scalar S2> requires(_STD is_convertible_v<S2, S>)
+	constexpr auto Inverse(const Matrix<S, CR, CR>& matrix, S2 determinant) noexcept -> Matrix<_IMPL CT<S, S2>, CR, CR>;
 
-	template<Dimension CR, Scalar S, Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto Translate(const Matrix<CR, CR, S>& matrix, const Vector<CR - 1, S2>& translation) -> CMT<CR, CR, S, S2>;
+	template<Scalar S, Dimension CR, Scalar S2> requires(_STD is_convertible_v<S2, S>)
+	constexpr auto Translate(const Matrix<S, CR, CR>& matrix, const Vector<S2, CR - 1>& translation) -> Matrix<_IMPL CT<S, S2>, CR, CR>;
 
-	template<Dimension A1, Dimension A2, Dimension CR, Scalar S, Scalar S2>
-		requires(A1 < CR - 1 && A2 < CR - 1 && A1 != A2 && _STD is_convertible_v<S2, S>)
-	constexpr auto Rotate(const Matrix<CR, CR, S>& matrix, const S2& radians) -> CMT<CR, CR, S, S2>;
+	template<Dimension A1, Dimension A2, Scalar S, Dimension CR, Scalar S2>
+	requires(A1 < CR - 1 && A2 < CR - 1 && A1 != A2 && _STD is_convertible_v<S2, S>)
+	constexpr auto Rotate(const Matrix<S, CR, CR>& matrix, S2 radians) -> Matrix<_IMPL CT<S, S2>, CR, CR>;
 
-	template<Dimension CR, Scalar S, Scalar S2>
-		requires(/*A1 < CR - 1 && A2 < CR - 1 && A1 != A2 && */_STD is_convertible_v<S2, S>)
-	constexpr auto Rotate(Dimension A1, Dimension A2, const Matrix<CR, CR, S>& matrix, const S2& radians) -> CMT<CR, CR, S, S2>;
+	template<Scalar S, Dimension CR, Scalar S2>
+	requires(/*A1 < CR - 1 && A2 < CR - 1 && A1 != A2 && */_STD is_convertible_v<S2, S>)
+	constexpr auto Rotate(Dimension A1, Dimension A2, const Matrix<S, CR, CR>& matrix, S2 radians) -> Matrix<_IMPL CT<S, S2>, CR, CR>;
 
-	template<Dimension CR, Scalar S, Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto Scale(const Matrix<CR, CR, S>& matrix, const Vector<CR - 1, S2>& scale) -> CMT<CR, CR, S, S2>;
+	template<Scalar S, Dimension CR, Scalar S2> requires(_STD is_convertible_v<S2, S>)
+	constexpr auto Scale(const Matrix<S, CR, CR>& matrix, const Vector<S2, CR - 1>& scale) -> Matrix<_IMPL CT<S, S2>, CR, CR>;
 
-	template<Dimension CR, Scalar S, Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto Scale(const Matrix<CR, CR, S>& matrix, const S2& scale) -> CMT<CR, CR, S, S2>;
+	template<Scalar S, Dimension CR, Scalar S2> requires(_STD is_convertible_v<S2, S>)
+	constexpr auto Scale(const Matrix<S, CR, CR>& matrix, S2 scale) -> Matrix<_IMPL CT<S, S2>, CR, CR>;
 
-	template<Dimension C, Dimension R, Scalar S>
-	auto operator<<(_STD ostream& ostream, const Matrix<C, R, S>& matrix) -> _STD ostream&;
+	template<Scalar S, Dimension C, Dimension R>
+	auto operator<<(_STD ostream& ostream, const Matrix<S, C, R>& matrix) -> _STD ostream&;
 
 	// Aliases
 
 	template<Dimension C, Dimension R = C>
-	using MatrixCRf = Matrix<C, R, float>;
+	using MatrixCRf = Matrix<float, C, R>;
 
 	using Matrix1f = MatrixCRf<1>;
 	using Matrix2f = MatrixCRf<2>;
@@ -216,8 +202,8 @@ export namespace nd
 // Implementation: Don't export.
 namespace nd::impl
 {
-	template<Dimension C, Dimension R, Scalar S>
-	auto PrintRow(_STD ostream& ostream, const Matrix<C, R, S>& matrix, long long width, Dimension r) noexcept -> void
+	template<Scalar S, Dimension C, Dimension R>
+	auto PrintRow(_STD ostream& ostream, const Matrix<S, C, R>& matrix, _STD streamsize width, Dimension r) noexcept -> void
 	{
 		ostream << '[' << _STD setw(width) << +matrix[0][r];
 		for (Dimension c{1}; c < C; c++)
@@ -228,49 +214,49 @@ namespace nd::impl
 
 export namespace nd
 {
-	template<Dimension C, Dimension R, Scalar S> requires(C > 0 && R > 0)
-	constexpr Matrix<C, R, S>::Matrix() noexcept
-		: Matrix<C, R, S>{1}
+	template<Scalar S, Dimension C, Dimension R>
+	constexpr Matrix<S, C, R>::Matrix() noexcept
+		: Matrix<S, C, R>{1}
 	{
 
 	}
 
-	template<Dimension C, Dimension R, Scalar S> requires(C > 0 && R > 0)
-	template<Dimension C2, Dimension R2, Scalar S2> requires(C2 <= C && R2 <= R && _STD is_convertible_v<S2, S>)
-	constexpr Matrix<C, R, S>::Matrix(const Matrix<C2, R2, S2>& matrix) noexcept
-		: Matrix<C, R, S>{1}
+	template<Scalar S, Dimension C, Dimension R>
+	template<Scalar S2, Dimension C2, Dimension R2> requires(C2 <= C && R2 <= R && _STD is_convertible_v<S2, S>)
+	constexpr Matrix<S, C, R>::Matrix(const Matrix<S2, C2, R2>& matrix) noexcept
+		: Matrix<S, C, R>{1}
 	{
 		for (Dimension c{}; c < C2; c++)
 			for (Dimension r{}; r < R2; r++)
 				m_Scalars[c][r] = S{matrix[c][r]};
 	}
 
-	template<Dimension C, Dimension R, Scalar S> requires(C > 0 && R > 0)
+	template<Scalar S, Dimension C, Dimension R>
 	template<Scalar S2, _STD enable_if_t<_STD is_convertible_v<S2, S>, int>>
-	constexpr Matrix<C, R, S>::Matrix(const S2& scalar) noexcept
+	constexpr Matrix<S, C, R>::Matrix(S2 scalar) noexcept
 	{
 		if (scalar != S{})
 			for (Dimension i{}; i < gcem::min(C, R); i++)
-				m_Scalars[i][i] = S{scalar};
+				m_Scalars[i][i] = static_cast<S>(scalar);
 	}
 
-	template<Dimension C, Dimension R, Scalar S> requires(C > 0 && R > 0)
+	template<Scalar S, Dimension C, Dimension R>
 	template<Scalar... S2s, _STD enable_if_t<sizeof...(S2s) == R * C && _IMPL all_true_v<_STD is_convertible_v<S2s, S>...>, int>>
-	constexpr Matrix<C, R, S>::Matrix(S2s&&... scalars) noexcept
+	constexpr Matrix<S, C, R>::Matrix(S2s&&... scalars) noexcept
 	{
 		Fill<C, R>(_STD forward<S2s>(scalars)...);
 	}
 
-	template<Dimension C, Dimension R, Scalar S> requires(C > 0 && R > 0)
+	template<Scalar S, Dimension C, Dimension R>
 	template<Scalar S2, _STD enable_if_t<_STD is_convertible_v<S2, S>, int>>
-	constexpr auto Matrix<C, R, S>::operator=(const S2& scalar) noexcept -> Matrix<C, R, S>&
+	constexpr auto Matrix<S, C, R>::operator=(S2 scalar) noexcept -> Matrix<S, C, R>&
 	{
-		return *this = Matrix<C, R, S>(scalar);
+		return *this = Matrix<S, C, R>(scalar);
 	}
 
-	template<Dimension C, Dimension R, Scalar S> requires(C > 0 && R > 0)
-	template<Dimension C2, Dimension R2, Scalar S2> requires(C2 <= C && R2 <= R && _STD is_convertible_v<S2, S>)
-	constexpr auto Matrix<C, R, S>::operator=(const Matrix<C2, R2, S2>& matrix) noexcept -> Matrix<C, R, S>&
+	template<Scalar S, Dimension C, Dimension R>
+	template<Scalar S2, Dimension C2, Dimension R2> requires(C2 <= C && R2 <= R && _STD is_convertible_v<S2, S>)
+	constexpr auto Matrix<S, C, R>::operator=(const Matrix<S2, C2, R2>& matrix) noexcept -> Matrix<S, C, R>&
 	{
 		if (this != (void*)&matrix)
 		{
@@ -292,16 +278,16 @@ export namespace nd
 		return *this;
 	}
 
-	template<Dimension C, Dimension R, Scalar S> requires(C > 0 && R > 0)
+	template<Scalar S, Dimension C, Dimension R>
 	template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto Matrix<C, R, S>::operator+(const S2& scalar) const noexcept -> CMT<C, R, S, S2>
+	constexpr auto Matrix<S, C, R>::operator+(S2 scalar) const noexcept -> Matrix<_IMPL CT<S, S2>, C, R>
 	{
-		return CMT<C, R, S, S2>{*this} += CT<S, S2>{scalar};
+		return Matrix<_IMPL CT<S, S2>, C, R>{*this} += _IMPL CT<S, S2>{scalar};
 	}
 
-	template<Dimension C, Dimension R, Scalar S> requires(C > 0 && R > 0)
+	template<Scalar S, Dimension C, Dimension R>
 	template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto Matrix<C, R, S>::operator+=(const S2& scalar) noexcept -> Matrix<C, R, S>&
+	constexpr auto Matrix<S, C, R>::operator+=(S2 scalar) noexcept -> Matrix<S, C, R>&
 	{
 		for (Dimension c{}; c < C; c++)
 			for (Dimension r{}; r < R; r++)
@@ -309,16 +295,16 @@ export namespace nd
 		return *this;
 	}
 
-	template<Dimension C, Dimension R, Scalar S> requires(C > 0 && R > 0)
+	template<Scalar S, Dimension C, Dimension R>
 	template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto Matrix<C, R, S>::operator+(const Matrix<C, R, S2>& matrix) const noexcept -> CMT<C, R, S, S2>
+	constexpr auto Matrix<S, C, R>::operator+(const Matrix<S2, C, R>& matrix) const noexcept -> Matrix<_IMPL CT<S, S2>, C, R>
 	{
-		return CMT<C, R, S, S2>{*this} += CMT<C, R, S, S2>{matrix};
+		return Matrix<_IMPL CT<S, S2>, C, R>{*this} += Matrix<_IMPL CT<S, S2>, C, R>{matrix};
 	}
 
-	template<Dimension C, Dimension R, Scalar S> requires(C > 0 && R > 0)
+	template<Scalar S, Dimension C, Dimension R>
 	template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto Matrix<C, R, S>::operator+=(const Matrix<C, R, S2>& matrix) noexcept -> Matrix<C, R, S>&
+	constexpr auto Matrix<S, C, R>::operator+=(const Matrix<S2, C, R>& matrix) noexcept -> Matrix<S, C, R>&
 	{
 		for (Dimension c{}; c < C; c++)
 			for (Dimension r{}; r < R; r++)
@@ -326,16 +312,16 @@ export namespace nd
 		return *this;
 	}
 
-	template<Dimension C, Dimension R, Scalar S> requires(C > 0 && R > 0)
+	template<Scalar S, Dimension C, Dimension R>
 	template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto Matrix<C, R, S>::operator-(const S2& scalar) const noexcept -> CMT<C, R, S, S2>
+	constexpr auto Matrix<S, C, R>::operator-(S2 scalar) const noexcept -> Matrix<_IMPL CT<S, S2>, C, R>
 	{
-		return CMT<C, R, S, S2>{*this} -= CT<S, S2>{scalar};
+		return Matrix<_IMPL CT<S, S2>, C, R>{*this} -= _IMPL CT<S, S2>{scalar};
 	}
 
-	template<Dimension C, Dimension R, Scalar S> requires(C > 0 && R > 0)
+	template<Scalar S, Dimension C, Dimension R>
 	template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto Matrix<C, R, S>::operator-=(const S2& scalar) noexcept -> Matrix<C, R, S>&
+	constexpr auto Matrix<S, C, R>::operator-=(S2 scalar) noexcept -> Matrix<S, C, R>&
 	{
 		for (Dimension c{}; c < C; c++)
 			for (Dimension r{}; r < R; r++)
@@ -343,16 +329,16 @@ export namespace nd
 		return *this;
 	}
 
-	template<Dimension C, Dimension R, Scalar S> requires(C > 0 && R > 0)
+	template<Scalar S, Dimension C, Dimension R>
 	template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto Matrix<C, R, S>::operator-(const Matrix<C, R, S2>& matrix) const noexcept -> CMT<C, R, S, S2>
+	constexpr auto Matrix<S, C, R>::operator-(const Matrix<S2, C, R>& matrix) const noexcept -> Matrix<_IMPL CT<S, S2>, C, R>
 	{
-		return CMT<C, R, S, S2>{*this} -= CMT<C, R, S, S2>{matrix};
+		return Matrix<_IMPL CT<S, S2>, C, R>{*this} -= Matrix<_IMPL CT<S, S2>, C, R>{matrix};
 	}
 
-	template<Dimension C, Dimension R, Scalar S> requires(C > 0 && R > 0)
+	template<Scalar S, Dimension C, Dimension R>
 	template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto Matrix<C, R, S>::operator-=(const Matrix<C, R, S2>& matrix) noexcept -> Matrix<C, R, S>&
+	constexpr auto Matrix<S, C, R>::operator-=(const Matrix<S2, C, R>& matrix) noexcept -> Matrix<S, C, R>&
 	{
 		for (Dimension c{}; c < C; c++)
 			for (Dimension r{}; r < R; r++)
@@ -360,16 +346,16 @@ export namespace nd
 		return *this;
 	}
 
-	template<Dimension C, Dimension R, Scalar S> requires(C > 0 && R > 0)
+	template<Scalar S, Dimension C, Dimension R>
 	template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto Matrix<C, R, S>::operator*(const S2& scalar) const noexcept -> CMT<C, R, S, S2>
+	constexpr auto Matrix<S, C, R>::operator*(S2 scalar) const noexcept -> Matrix<_IMPL CT<S, S2>, C, R>
 	{
-		return CMT<C, R, S, S2>{*this} *= CT<S, S2>{scalar};
+		return Matrix<_IMPL CT<S, S2>, C, R>{*this} *= _IMPL CT<S, S2>{scalar};
 	}
 
-	template<Dimension C, Dimension R, Scalar S> requires(C > 0 && R > 0)
+	template<Scalar S, Dimension C, Dimension R>
 	template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto Matrix<C, R, S>::operator*=(const S2& scalar) noexcept -> Matrix<C, R, S>&
+	constexpr auto Matrix<S, C, R>::operator*=(S2 scalar) noexcept -> Matrix<S, C, R>&
 	{
 		for (Dimension c{}; c < C; c++)
 			for (Dimension r{}; r < R; r++)
@@ -377,34 +363,34 @@ export namespace nd
 		return *this;
 	}
 
-	template<Dimension C, Dimension R, Scalar S> requires(C > 0 && R > 0)
-	template<Dimension C2, Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto Matrix<C, R, S>::operator*(const Matrix<C2, C, S2>& matrix) const noexcept -> CMT<C2, R, S, S2>
+	template<Scalar S, Dimension C, Dimension R>
+	template<Scalar S2, Dimension C2> requires(_STD is_convertible_v<S2, S>)
+	constexpr auto Matrix<S, C, R>::operator*(const Matrix<S2, C2, C>& matrix) const noexcept -> Matrix<_IMPL CT<S, S2>, C2, R>
 	{
-		CMT<C2, R, S, S2> result{CT<S, S2>{}};
+		Matrix<_IMPL CT<S, S2>, C2, R> result{_IMPL CT<S, S2>{}};
 		for (Dimension i{}; i < C2; i++)
 			for (Dimension j{}; j < C; j++)
-				result[i] += CVT<R, S, S2>{m_Scalars[j]} * CT<S, S2>{matrix[i][j]};
+				result[i] += Vector<_IMPL CT<S, S2>, R>{m_Scalars[j]} * _IMPL CT<S, S2>{matrix[i][j]};
 		return result;
 	}
 
-	template<Dimension C, Dimension R, Scalar S> requires(C > 0 && R > 0)
+	template<Scalar S, Dimension C, Dimension R>
 	template<Scalar S2> requires(R == C && _STD is_convertible_v<S2, S>)
-	constexpr auto Matrix<C, R, S>::operator*=(const Matrix<C, C, S2>& matrix) noexcept -> Matrix<C, R, S>&
+	constexpr auto Matrix<S, C, R>::operator*=(const Matrix<S2, C, C>& matrix) noexcept -> Matrix<S, C, R>&
 	{
-		return *this = CMT<C, R, S, S2>{*this} * CT<S, S2>{matrix};
+		return *this = Matrix<_IMPL CT<S, S2>, C, R>{*this} * _IMPL CT<S, S2>{matrix};
 	}
 
-	template<Dimension C, Dimension R, Scalar S> requires(C > 0 && R > 0)
+	template<Scalar S, Dimension C, Dimension R>
 	template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto Matrix<C, R, S>::operator/(const S2& scalar) const noexcept -> CMT<C, R, S, S2>
+	constexpr auto Matrix<S, C, R>::operator/(S2 scalar) const noexcept -> Matrix<_IMPL CT<S, S2>, C, R>
 	{
-		return CMT<C, R, S, S2>{*this} /= CT<S, S2>{scalar};
+		return Matrix<_IMPL CT<S, S2>, C, R>{*this} /= _IMPL CT<S, S2>{scalar};
 	}
 
-	template<Dimension C, Dimension R, Scalar S> requires(C > 0 && R > 0)
+	template<Scalar S, Dimension C, Dimension R>
 	template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto Matrix<C, R, S>::operator/=(const S2& scalar) noexcept -> Matrix<C, R, S>&
+	constexpr auto Matrix<S, C, R>::operator/=(S2 scalar) noexcept -> Matrix<S, C, R>&
 	{
 		for (Dimension c{}; c < C; c++)
 			for (Dimension r{}; r < R; r++)
@@ -412,95 +398,83 @@ export namespace nd
 		return *this;
 	}
 
-	template<Dimension C, Dimension R, Scalar S> requires(C > 0 && R > 0)
+	template<Scalar S, Dimension C, Dimension R>
 	template<Scalar S2> requires(R == C && _STD is_convertible_v<S2, S>)
-	constexpr auto Matrix<C, R, S>::operator/(const Matrix<C, C, S2>& matrix) const noexcept -> CMT<C, R, S, S2>
+	constexpr auto Matrix<S, C, R>::operator/(const Matrix<S2, C, C>& matrix) const noexcept -> Matrix<_IMPL CT<S, S2>, C, R>
 	{
-		return CMT<C, R, S, S2>{*this} * Inverse(CMT<C, R, S, S2>{matrix});
+		return Matrix<_IMPL CT<S, S2>, C, R>{*this} * Inverse(Matrix<_IMPL CT<S, S2>, C, R>{matrix});
 	}
 
-	template<Dimension C, Dimension R, Scalar S> requires(C > 0 && R > 0)
+	template<Scalar S, Dimension C, Dimension R>
 	template<Scalar S2> requires(R == C && _STD is_convertible_v<S2, S>)
-	constexpr auto Matrix<C, R, S>::operator/=(const Matrix<C, C, S2>& matrix) noexcept -> Matrix<C, R, S>&
+	constexpr auto Matrix<S, C, R>::operator/=(const Matrix<S2, C, C>& matrix) noexcept -> Matrix<S, C, R>&
 	{
-		return *this = CMT<C, R, S, S2>{*this} / CMT<C, C, S, S2>{matrix};
+		return *this = Matrix<_IMPL CT<S, S2>, C, R>{*this} / Matrix<_IMPL CT<S, S2>, C, C>{matrix};
 	}
 
-	template<Dimension C, Dimension R, Scalar S> requires(C > 0 && R > 0)
+	template<Scalar S, Dimension C, Dimension R>
 	template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto Matrix<C, R, S>::operator*(const Vector<C, S2>& vector) const noexcept -> CVT<R, S, S2>
+	constexpr auto Matrix<S, C, R>::operator*(const Vector<S2, C>& vector) const noexcept -> Vector<_IMPL CT<S, S2>, R>
 	{
-		CVT<R, S, S2> result;
+		Vector<_IMPL CT<S, S2>, R> result;
 		for (Dimension c{}; c < C; c++)
-			result += CT<S, S2>{m_Scalars[c]} * CT<S, S2>{vector[c]};
+			result += _IMPL CT<S, S2>{m_Scalars[c]} * _IMPL CT<S, S2>{vector[c]};
 		return result;
 	}
 
-	template<Dimension C, Dimension R, Scalar S> requires(C > 0 && R > 0)
-	constexpr auto Matrix<C, R, S>::operator+() const noexcept -> Matrix<C, R, S>
+	template<Scalar S, Dimension C, Dimension R>
+	constexpr auto Matrix<S, C, R>::operator+() const noexcept -> Matrix<S, C, R>
 	{
-		return Matrix<C, R, S>{*this};
+		return Matrix<S, C, R>{*this};
 	}
 
-	template<Dimension C, Dimension R, Scalar S> requires(C > 0 && R > 0)
-	constexpr auto Matrix<C, R, S>::operator-() const noexcept -> Matrix<C, R, S>
+	template<Scalar S, Dimension C, Dimension R>
+	constexpr auto Matrix<S, C, R>::operator-() const noexcept -> Matrix<S, C, R>
 	{
-		Matrix<C, R, S> result{+*this};
+		Matrix<S, C, R> result{+*this};
 		for (Dimension c{}; c < C; c++)
 			for (Dimension r{}; r < R; r++)
 				m_Scalars[c][r] = -m_Scalars[c][r];
 		return result;
 	}
 
-	template<Dimension C, Dimension R, Scalar S> requires(C > 0 && R > 0)
-	constexpr auto Matrix<C, R, S>::operator[](Dimension col) noexcept -> Vector<R, S>&
-	{
-		return m_Scalars[col];
-	}
-
-	template<Dimension C, Dimension R, Scalar S> requires(C > 0 && R > 0)
-	constexpr auto Matrix<C, R, S>::operator[](Dimension col) const noexcept -> const Vector<R, S>&
-	{
-		return m_Scalars[col];
-	}
-
-	template<Dimension C, Dimension R, Scalar S> requires(C > 0 && R > 0)
+	template<Scalar S, Dimension C, Dimension R>
 	template<Dimension C2> requires(C2 < C)
-	constexpr auto Matrix<C, R, S>::Col() const noexcept -> Vector<C, S>
+	constexpr auto Matrix<S, C, R>::Col() const noexcept -> Vector<S, R>
 	{
 		return m_Scalars[C2];
 	}
 
-	template<Dimension C, Dimension R, Scalar S> requires(C > 0 && R > 0)
+	template<Scalar S, Dimension C, Dimension R>
 	template<Dimension R2> requires(R2 < R)
-	constexpr auto Matrix<C, R, S>::Row() const noexcept -> Vector<C, S>
+	constexpr auto Matrix<S, C, R>::Row() const noexcept -> Vector<S, C>
 	{
-		Vector<C, S> row;
+		Vector<S, C> row;
 		for (Dimension c{}; c < C; c++)
 			row[c] = m_Scalars[c][R2];
 		return row;
 	}
 
-	template<Dimension C, Dimension R, Scalar S> requires(C > 0 && R > 0)
-	constexpr auto Matrix<C, R, S>::Col(Dimension C2) const noexcept -> Vector<C, S>
+	template<Scalar S, Dimension C, Dimension R>
+	constexpr auto Matrix<S, C, R>::Col(Dimension C2) const noexcept -> Vector<S, R>
 	{
 		__assume(C2 < C);
 		return m_Scalars[C2];
 	}
 
-	template<Dimension C, Dimension R, Scalar S> requires(C > 0 && R > 0)
-	constexpr auto Matrix<C, R, S>::Row(Dimension R2) const noexcept -> Vector<C, S>
+	template<Scalar S, Dimension C, Dimension R>
+	constexpr auto Matrix<S, C, R>::Row(Dimension R2) const noexcept -> Vector<S, C>
 	{
 		__assume(R2 < R);
-		Vector<C, S> row;
+		Vector<S, C> row;
 		for (Dimension c{}; c < C; c++)
 			row[c] = m_Scalars[c][R2];
 		return row;
 	}
 
-	template<Dimension C, Dimension R, Scalar S> requires(C > 0 && R > 0)
+	template<Scalar S, Dimension C, Dimension R>
 	template<Dimension C2, Dimension R2, Scalar S2, Scalar... Scalars>
-	constexpr auto Matrix<C, R, S>::Fill(const S2& scalar, Scalars&&... scalars) -> void
+	constexpr auto Matrix<S, C, R>::Fill(S2 scalar, Scalars&&... scalars) -> void
 	{
 		m_Scalars[C - C2][R - R2] = static_cast<S>(scalar);
 		if constexpr (C2 > 1)
@@ -509,46 +483,46 @@ export namespace nd
 			Fill<C, R2 - 1>(_STD forward<Scalars>(scalars)...);
 	}
 	
-	template<Dimension C, Dimension R, Scalar S, Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto operator+(const S2& scalar, const Matrix<C, R, S>& matrix) noexcept -> CMT<C, R, S, S2>
+	template<Scalar S, Dimension C, Dimension R, Scalar S2> requires(_STD is_convertible_v<S2, S>)
+	constexpr auto operator+(S2 scalar, const Matrix<S, C, R>& matrix) noexcept -> Matrix<_IMPL CT<S, S2>, C, R>
 	{
-		return CMT<C, R, S, S2>{matrix} += CT<S, S2>{scalar};
+		return Matrix<_IMPL CT<S, S2>, C, R>{matrix} += _IMPL CT<S, S2>{scalar};
+	}
+	
+	template<Scalar S, Dimension C, Dimension R, Scalar S2> requires(_STD is_convertible_v<S2, S>)
+	constexpr auto operator-(S2 scalar, const Matrix<S, C, R>& matrix) noexcept -> Matrix<_IMPL CT<S, S2>, C, R>
+	{
+		return Matrix<_IMPL CT<S, S2>, C, R>{-matrix} += _IMPL CT<S, S2>{scalar};
+	}
+	
+	template<Scalar S, Dimension C, Dimension R, Scalar S2> requires(_STD is_convertible_v<S2, S>)
+	constexpr auto operator*(S2 scalar, const Matrix<S, C, R>& matrix) noexcept -> Matrix<_IMPL CT<S, S2>, C, R>
+	{
+		return Matrix<_IMPL CT<S, S2>, C, R>{matrix} *= _IMPL CT<S, S2>{scalar};
+	}
+	
+	template<Scalar S, Dimension CR, Scalar S2> requires(_STD is_convertible_v<S2, S>)
+	constexpr auto operator/(S2 scalar, const Matrix<S, CR, CR>& matrix) noexcept -> Matrix<_IMPL CT<S, S2>, CR, CR>
+	{
+		return Inverse(Matrix<_IMPL CT<S, S2>, CR, CR>{matrix}) *= _IMPL CT<S, S2>{scalar};
 	}
 	
 	template<Dimension C, Dimension R, Scalar S, Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto operator-(const S2& scalar, const Matrix<C, R, S>& matrix) noexcept -> CMT<C, R, S, S2>
+	constexpr auto operator*(const Vector<S2, R>& vector, const Matrix<S, C, R>& matrix) noexcept -> Vector<_IMPL CT<S, S2>, C>
 	{
-		return CMT<C, R, S, S2>{-matrix} += CT<S, S2>{scalar};
-	}
-	
-	template<Dimension C, Dimension R, Scalar S, Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto operator*(const S2& scalar, const Matrix<C, R, S>& matrix) noexcept -> CMT<C, R, S, S2>
-	{
-		return CMT<C, R, S, S2>{matrix} *= CT<S, S2>{scalar};
-	}
-	
-	template<Dimension CR, Scalar S, Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto operator/(const S2& scalar, const Matrix<CR, CR, S>& matrix) noexcept -> CMT<CR, CR, S, S2>
-	{
-		return Inverse(CMT<CR, CR, S, S2>{matrix}) *= CT<S, S2>{scalar};
-	}
-	
-	template<Dimension C, Dimension R, Scalar S, Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto operator*(const Vector<R, S2>& vector, const Matrix<C, R, S>& matrix) noexcept -> CVT<C, S, S2>
-	{
-		CVT<C, S, S2> result;
+		Vector<_IMPL CT<S, S2>, C> result;
 
-		CMT<R, C, S, S2> m{Transpose(CMT<C, R, S, S2>{matrix})};
+		Matrix<_IMPL CT<S, S2>, R, C> m{Transpose(Matrix<_IMPL CT<S, S2>, C, R>{matrix})};
 		for (Dimension r{}; r < R; r++)
-			result += CVT<R, S, S2>{m[r]} * CVT<R, S, S2>{vector[r]};
+			result += Vector<_IMPL CT<S, S2>, R>{m[r]} * Vector<_IMPL CT<S, S2>, R>{vector[r]};
 
 		return result;
 	}
 	
-	template<Dimension C, Dimension R, Scalar S, Dimension C2, Dimension R2> requires(C < C2 && R < R2 && C2 > 1 && R2 > 1)
-	constexpr auto Submatrix(const Matrix<C2, R2, S>& matrix) noexcept -> Matrix<C2 - 1, R2 - 1, S>
+	template<Scalar S, Dimension C, Dimension R, Dimension C2, Dimension R2> requires(C < C2 && R < R2 && C2 > 1 && R2 > 1)
+	constexpr auto Submatrix(const Matrix<S, C2, R2>& matrix) noexcept -> Matrix<S, C2 - 1, R2 - 1>
 	{
-		Matrix<C2 - 1, R2 - 1, S> result{S{}};
+		Matrix<S, C2 - 1, R2 - 1> result{S{}};
 
 		for (Dimension c{}; c < C; c++)
 			for (Dimension r{}; r < R; r++)
@@ -569,13 +543,13 @@ export namespace nd
 		return result;
 	}
 	
-	template<Dimension C2, Dimension R2, Scalar S>
-		requires(/*C < C2 && R < R2 && */C2 > 1 && R2 > 1)
-	constexpr auto Submatrix(Dimension C, Dimension R, const Matrix<C2, R2, S>& matrix) noexcept -> Matrix<C2 - 1, R2 - 1, S>
+	template<Scalar S, Dimension C2, Dimension R2>
+	requires(/*C < C2 && R < R2 && */C2 > 1 && R2 > 1)
+	constexpr auto Submatrix(Dimension C, Dimension R, const Matrix<S, C2, R2>& matrix) noexcept -> Matrix<S, C2 - 1, R2 - 1>
 	{
 		__assume(C < C2 && R < R2);
 
-		Matrix<C2 - 1, R2 - 1, S> result{S{}};
+		Matrix<S, C2 - 1, R2 - 1> result{S{}};
 
 		for (Dimension c{}; c < C; c++)
 			for (Dimension r{}; r < R; r++)
@@ -596,8 +570,8 @@ export namespace nd
 		return result;
 	}
 
-	template<Dimension CR, Scalar S>
-	constexpr auto Trace(const Matrix<CR, CR, S>& matrix) noexcept -> S
+	template<Scalar S, Dimension CR>
+	constexpr auto Trace(const Matrix<S, CR, CR>& matrix) noexcept -> S
 	{
 		S result{S{}};
 		for (Dimension cr{}; cr < CR; cr++)
@@ -605,8 +579,8 @@ export namespace nd
 		return result;
 	}
 
-	template<Dimension CR, Scalar S>
-	constexpr auto Determinant(const Matrix<CR, CR, S>& matrix) noexcept -> S
+	template<Scalar S, Dimension CR>
+	constexpr auto Determinant(const Matrix<S, CR, CR>& matrix) noexcept -> S
 	{
 		S result{S{}};
 
@@ -623,35 +597,35 @@ export namespace nd
 	}
 
 	template<Scalar S>
-	constexpr auto Determinant(const Matrix<1, 1, S>& matrix) noexcept -> S
+	constexpr auto Determinant(const Matrix<S, 1, 1>& matrix) noexcept -> S
 	{
 		return matrix[0][0];
 	}
 	
-	template<Dimension C, Dimension R, Scalar S>
-	constexpr auto Transpose(const Matrix<C, R, S>& matrix) noexcept -> Matrix<R, C, S>
+	template<Scalar S, Dimension C, Dimension R>
+	constexpr auto Transpose(const Matrix<S, C, R>& matrix) noexcept -> Matrix<S, R, C>
 	{
-		Matrix<R, C, S> result = S();
+		Matrix<S, R, C> result = S();
 		for (Dimension c{}; c < C; c++)
 			for (Dimension r{}; r < R; r++)
 				result[r][c] = matrix[c][r];
 		return result;
 	}
 
-	template<Dimension CR, Scalar S>
-	constexpr auto Minors(const Matrix<CR, CR, S>& matrix) noexcept -> Matrix<CR, CR, S>
+	template<Scalar S, Dimension CR>
+	constexpr auto Minors(const Matrix<S, CR, CR>& matrix) noexcept -> Matrix<S, CR, CR>
 	{
-		Matrix<CR, CR, S> result = S();
+		Matrix<S, CR, CR> result = S();
 		for (Dimension c{}; c < CR; c++)
 			for (Dimension r{}; r < CR; r++)
 				result[c][r] = Determinant(Submatrix(c, r, matrix));
 		return result;
 	}
 
-	template<Dimension CR, Scalar S>
-	constexpr auto Cofactors(const Matrix<CR, CR, S>& matrix) noexcept -> Matrix<CR, CR, S>
+	template<Scalar S, Dimension CR>
+	constexpr auto Cofactors(const Matrix<S, CR, CR>& matrix) noexcept -> Matrix<S, CR, CR>
 	{
-		Matrix<CR, CR, S> result = Minors(matrix);
+		Matrix<S, CR, CR> result = Minors(matrix);
 		for (Dimension c{}; c < CR; c++)
 			for (Dimension r{}; r < CR; r++)
 				if ((c + r) % 2 != 0)
@@ -659,38 +633,38 @@ export namespace nd
 		return result;
 	}
 
-	template<Dimension CR, Scalar S>
-	constexpr auto Adjugate(const Matrix<CR, CR, S>& matrix) noexcept -> Matrix<CR, CR, S>
+	template<Scalar S, Dimension CR>
+	constexpr auto Adjugate(const Matrix<S, CR, CR>& matrix) noexcept -> Matrix<S, CR, CR>
 	{
 		return Transpose(Cofactors(matrix));
 	}
 
-	template<Dimension CR, Scalar S>
-	constexpr auto Inverse(const Matrix<CR, CR, S>& matrix) noexcept -> Matrix<CR, CR, S>
+	template<Scalar S, Dimension CR>
+	constexpr auto Inverse(const Matrix<S, CR, CR>& matrix) noexcept -> Matrix<S, CR, CR>
 	{
 		return Adjugate(matrix) / Determinant(matrix);
 	}
 	
-	template<Dimension CR, Scalar S, Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto Inverse(const Matrix<CR, CR, S>& matrix, const S2& determinant) noexcept -> CMT<CR, CR, S, S2>
+	template<Scalar S, Dimension CR, Scalar S2> requires(_STD is_convertible_v<S2, S>)
+	constexpr auto Inverse(const Matrix<S, CR, CR>& matrix, S2 determinant) noexcept -> Matrix<_IMPL CT<S, S2>, CR, CR>
 	{
-		return Adjugate(CMT<CR, CR, S, S2>{matrix}) / CT<S, S2>{determinant};
+		return Adjugate(Matrix<_IMPL CT<S, S2>, CR, CR>{matrix}) / _IMPL CT<S, S2>{determinant};
 	}
 	
-	template<Dimension CR, Scalar S, Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto Translate(const Matrix<CR, CR, S>& matrix, const Vector<CR - 1, S2>& translation) -> CMT<CR, CR, S, S2>
+	template<Scalar S, Dimension CR, Scalar S2> requires(_STD is_convertible_v<S2, S>)
+	constexpr auto Translate(const Matrix<S, CR, CR>& matrix, const Vector<S2, CR - 1>& translation) -> Matrix<_IMPL CT<S, S2>, CR, CR>
 	{
-		CMT<CR, CR, S, S2> t;
+		Matrix<_IMPL CT<S, S2>, CR, CR> t;
 		for (Dimension r{}; r < CR - 1; r++)
-			t[CR - 1][r] += CT<S, S2>{translation[r]};
+			t[CR - 1][r] += _IMPL CT<S, S2>{translation[r]};
 		return matrix * t;
 	}
 	
 	template<Dimension A1, Dimension A2, Dimension CR, Scalar S, Scalar S2>
-		requires(A1 < CR - 1 && A2 < CR - 1 && A1 != A2 && _STD is_convertible_v<S2, S>)
-	constexpr auto Rotate(const Matrix<CR, CR, S>& matrix, const S2& radians) -> CMT<CR, CR, S, S2>
+	requires(A1 < CR - 1 && A2 < CR - 1 && A1 != A2 && _STD is_convertible_v<S2, S>)
+	constexpr auto Rotate(const Matrix<S, CR, CR>& matrix, S2 radians) -> Matrix<_IMPL CT<S, S2>, CR, CR>
 	{
-		CMT<CR, CR, S, S2> rotation;
+		Matrix<_IMPL CT<S, S2>, CR, CR> rotation;
 
 		auto sin{CT<S, S2>(gcem::sin(CT<S, S2>(radians)))};
 		auto cos{CT<S, S2>(gcem::cos(CT<S, S2>(radians)))};
@@ -698,16 +672,16 @@ export namespace nd
 		rotation[A1][A1] = cos; rotation[A2][A1] = -sin;
 		rotation[A1][A2] = sin; rotation[A2][A2] = cos;
 
-		return CMT<CR, CR, S, S2>{matrix} * rotation;
+		return Matrix<_IMPL CT<S, S2>, CR, CR>{matrix} * rotation;
 	}
 	
-	template<Dimension CR, Scalar S, Scalar S2>
-		requires(/*A1 < CR - 1 && A2 < CR - 1 && A1 != A2 && */_STD is_convertible_v<S2, S>)
-	constexpr auto Rotate(Dimension A1, Dimension A2, const Matrix<CR, CR, S>& matrix, const S2& radians) -> CMT<CR, CR, S, S2>
+	template<Scalar S, Dimension CR, Scalar S2>
+	requires(/*A1 < CR - 1 && A2 < CR - 1 && A1 != A2 && */_STD is_convertible_v<S2, S>)
+	constexpr auto Rotate(Dimension A1, Dimension A2, const Matrix<S, CR, CR>& matrix, S2 radians) -> Matrix<_IMPL CT<S, S2>, CR, CR>
 	{
 		__assume(A1 < CR - 1 && A2 < CR - 1 && A1 != A2);
 
-		CMT<CR, CR, S, S2> rotation;
+		Matrix<_IMPL CT<S, S2>, CR, CR> rotation;
 
 		auto sin{CT<S, S2>(gcem::sin(CT<S, S2>(radians)))};
 		auto cos{CT<S, S2>(gcem::cos(CT<S, S2>(radians)))};
@@ -715,28 +689,28 @@ export namespace nd
 		rotation[A1][A1] = cos; rotation[A2][A1] = -sin;
 		rotation[A1][A2] = sin; rotation[A2][A2] = cos;
 
-		return CMT<CR, CR, S, S2>{matrix} * rotation;
+		return Matrix<_IMPL CT<S, S2>, CR, CR>{matrix} * rotation;
 	}
 	
-	template<Dimension CR, Scalar S, Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto Scale(const Matrix<CR, CR, S>& matrix, const Vector<CR - 1, S2>& scale) -> CMT<CR, CR, S, S2>
+	template<Scalar S, Dimension CR, Scalar S2> requires(_STD is_convertible_v<S2, S>)
+	constexpr auto Scale(const Matrix<S, CR, CR>& matrix, const Vector<S2, CR - 1>& scale) -> Matrix<_IMPL CT<S, S2>, CR, CR>
 	{
-		CMT<CR, CR, S, S2> s;
+		Matrix<_IMPL CT<S, S2>, CR, CR> s;
 		for (Dimension cr{}; cr < CR - 1; cr++)
 			s[cr][cr] = CT<S, S2>(scale[cr]);
-		return CMT<CR, CR, S, S2>{matrix} * s;
+		return Matrix<_IMPL CT<S, S2>, CR, CR>{matrix} * s;
 	}
 	
-	template<Dimension CR, Scalar S, Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto Scale(const Matrix<CR, CR, S>& matrix, const S2& scale) -> CMT<CR, CR, S, S2>
+	template<Scalar S, Dimension CR, Scalar S2> requires(_STD is_convertible_v<S2, S>)
+	constexpr auto Scale(const Matrix<S, CR, CR>& matrix, S2 scale) -> Matrix<_IMPL CT<S, S2>, CR, CR>
 	{
-		CMT<CR, CR, S, S2> s{CT<S, S2>{scale}};
-		s[CR - 1][CR - 1] = CT<S, S2>{1};
-		return CMT<CR, CR, S, S2>{matrix} * s;
+		Matrix<_IMPL CT<S, S2>, CR, CR> s{_IMPL CT<S, S2>{scale}};
+		s[CR - 1][CR - 1] = _IMPL CT<S, S2>{1};
+		return Matrix<_IMPL CT<S, S2>, CR, CR>{matrix} * s;
 	}
 
-	template<Dimension C, Dimension R, _STD floating_point S>
-	auto operator<<(_STD ostream& ostream, const Matrix<C, R, S>& matrix) -> _STD ostream&
+	template<_STD floating_point S, Dimension C, Dimension R>
+	auto operator<<(_STD ostream& ostream, const Matrix<S, C, R>& matrix) -> _STD ostream&
 	{
 		ostream << _STD showpos << _STD scientific;
 		_IMPL PrintRow(ostream, matrix, 13, 0);
@@ -745,8 +719,8 @@ export namespace nd
 		return ostream << _STD defaultfloat << _STD noshowpos;
 	}
 
-	template<Dimension C, Dimension R, _STD integral S>
-	auto operator<<(_STD ostream& ostream, const Matrix<C, R, S>& matrix) -> _STD ostream&
+	template<_STD integral S, Dimension C, Dimension R>
+	auto operator<<(_STD ostream& ostream, const Matrix<S, C, R>& matrix) -> _STD ostream&
 	{
 		constexpr long long width{_STD is_signed_v<S> + static_cast<long long>(gcem::max(
 			S{gcem::ceil(gcem::log10(_STD make_unsigned_t<S>(_STD numeric_limits<S>::min())))},

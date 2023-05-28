@@ -1,5 +1,6 @@
 export module nd.impl;
 
+import nd.scalar;
 import <concepts>;
 
 export namespace nd::impl
@@ -14,4 +15,8 @@ export namespace nd::impl
 
 	template<bool... Bools>
 	constexpr bool all_true_v = all_same_bool_v<true, Bools...>;
+
+
+	template<Scalar... Scalars>
+	using CT = _STD common_type_t<Scalars...>;
 }
