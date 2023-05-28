@@ -32,7 +32,7 @@ namespace nd::impl
 export namespace nd
 {
 	template<Scalar S, Dimension R, Dimension N = 0, Dimension... Ns>
-	requires((R == 0 && N == 0 && sizeof...(Ns) == 0) || (R > 0 && N > 0 && sizeof...(Ns) == R - 1 && _IMPL gt0_v<Ns...>))
+	requires((R == 0 && N == 0 && sizeof...(Ns) == 0) || (_IMPL gt0_v<R, N, Ns...> && sizeof...(Ns) == R - 1))
 	struct Tensor
 	{
 	public:
@@ -61,9 +61,6 @@ export namespace nd
 	// Static Methods
 
 	// Aliases
-
-	//template<Scalar S, Dimension C, Dimension R = C>
-	//using Matrix = Tensor<S, 2, C, R>;
 }
 
 // Implementation: Don't export.
@@ -75,7 +72,7 @@ namespace nd::impl
 export namespace nd
 {
 	template<Scalar S, Dimension R, Dimension N, Dimension... Ns>
-	requires((R == 0 && N == 0 && sizeof...(Ns) == 0) || (R > 0 && N > 0 && sizeof...(Ns) == R - 1 && _IMPL gt0_v<Ns...>))
+	requires((R == 0 && N == 0 && sizeof...(Ns) == 0) || (_IMPL gt0_v<R, N, Ns...> && sizeof...(Ns) == R - 1))
 	constexpr auto Tensor<S, R, N, Ns...>::operator[](Dimension n) noexcept -> Tensor<S, R - 1, Ns...>&
 	{
 		__assume(n < N);
@@ -83,14 +80,14 @@ export namespace nd
 	}
 
 	template<Scalar S, Dimension R, Dimension N, Dimension... Ns>
-	requires((R == 0 && N == 0 && sizeof...(Ns) == 0) || (R > 0 && N > 0 && sizeof...(Ns) == R - 1 && _IMPL gt0_v<Ns...>))
+	requires((R == 0 && N == 0 && sizeof...(Ns) == 0) || (_IMPL gt0_v<R, N, Ns...> && sizeof...(Ns) == R - 1))
 	constexpr auto Tensor<S, R, N, Ns...>::operator[](Dimension n) const noexcept -> const Tensor<S, R - 1, Ns...>&
 	{
 		__assume(n < N);
 		return m_Scalars[n];
 	}
 
-	// Tensor<0, S>
+	// Tensor<S, 0>
 
 	template<Scalar S>
 	constexpr Tensor<S, 0>::Tensor(S scalar) noexcept
