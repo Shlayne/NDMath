@@ -1,7 +1,7 @@
 project "NDMath"
 	kind "ConsoleApp"
 	language "C++"
-	cppdialect "C++20"
+	cppdialect "C++latest"
 	cdialect "C17"
 	staticruntime "On"
 

@@ -5,5 +5,5 @@ import <concepts>;
 export namespace nd
 {
 	template<typename T>
-	concept Scalar = std::integral<T> || std::floating_point<T>;
+	concept Scalar = _STD integral<T> || _STD floating_point<T>;
 }
