@@ -4,8 +4,7 @@ module;
 
 export module nd.matrix;
 
-import nd.dimension;
-import nd.scalar;
+import nd.types;
 import nd.impl;
 import nd.tensor;
 import nd.vector;
