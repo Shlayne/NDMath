@@ -6,7 +6,10 @@ export module nd.tensor;
 
 import nd.types;
 import nd.impl;
+import <algorithm>;
 import <array>;
+import <iomanip>;
+import <iostream>;
 
 #define _ND ::nd::
 #define _IMPL ::nd::impl::
@@ -164,7 +167,19 @@ export namespace nd
 	template<Scalar S, Scalar S2, Dimension R, Dimension N = 0, Dimension... Ns>
 	constexpr auto operator/(const S& scalar, const Tensor<S2, R, N, Ns...>& tensor) noexcept -> Tensor<_IMPL CT<S, S2>, R, N, Ns...>;
 
+	template<Scalar S, Dimension N>
+	auto operator<<(_STD ostream& ostream, const Tensor<S, 1, N>& vector) -> _STD ostream&;
+
+	template<Scalar S, Dimension C, Dimension R>
+	auto operator<<(_STD ostream& ostream, const Tensor<S, 2, C, R>& matrix) -> _STD ostream&;
+
 	// Static Methods
+
+	template<Scalar S1, Scalar S2, Dimension R1, Dimension R2, Dimension N1 = 0, Dimension N2 = 0, Dimension... N1s, Dimension... N2s>
+	constexpr auto OuterProduct(const Tensor<S1, R1, N1, N1s...>& tensor1, const Tensor<S2, R2, N2, N2s...>& tensor2) noexcept; // -> Tensor<_IMPL CT<S1, S2>, R1 + R2, N1, N1s..., N2, N2s...>;
+
+	template<Scalar S1, Scalar S2, Dimension R, Dimension N = 0, Dimension... Ns>
+	constexpr auto InnerProduct(const Tensor<S1, R, N, Ns...>& tensor1, const Tensor<S2, R, N, Ns...>& tensor2) noexcept -> _IMPL CT<S1, S2>;
 
 	// Aliases
 }
@@ -172,7 +187,14 @@ export namespace nd
 // Implementation: Don't export.
 namespace nd::impl
 {
-
+	template<Scalar S, Dimension C, Dimension R>
+	auto PrintRow(_STD ostream& ostream, const Tensor<S, 2, C, R>& matrix, _STD streamsize width, Dimension r) noexcept -> void
+	{
+		ostream << '[' << _STD setw(width) << +matrix[0][r];
+		for (Dimension c{1}; c < C; c++)
+			ostream << _STD setw(width + 1) << +matrix[c][r];
+		ostream << ']';
+	};
 }
 
 export namespace nd
@@ -533,6 +555,67 @@ export namespace nd
 		return Tensor<_IMPL CT<S, S2>, R, N, Ns...>{scalar} /= tensor;
 	}
 
+	template<Scalar S, Dimension N>
+	auto operator<<(_STD ostream& ostream, const Tensor<S, 1, N>& vector) -> _STD ostream&
+	{
+		ostream << '<' << vector[0];
+		for (Dimension n{1}; n < N; ++n)
+			ostream << ',' << vector[n];
+		return ostream << '>';
+	}
+
+	template<_STD floating_point S, Dimension C, Dimension R>
+	auto operator<<(_STD ostream& ostream, const Tensor<S, 2, C, R>& matrix) -> _STD ostream&
+	{
+		ostream << _STD showpos << _STD scientific;
+		_IMPL PrintRow(ostream, matrix, 13, 0);
+		for (Dimension r{1}; r < R; ++r)
+			_IMPL PrintRow(ostream << '\n', matrix, 13, r);
+		return ostream << _STD defaultfloat << _STD noshowpos;
+	}
+
+	template<_STD integral S, Dimension C, Dimension R>
+	auto operator<<(_STD ostream& ostream, const Tensor<S, 2, C, R>& matrix) -> _STD ostream&
+	{
+		constexpr _STD streamsize width{_STD is_signed_v<S> + static_cast<_STD streamsize>(_GCEM max(
+			S{_GCEM ceil(_GCEM log10(_STD make_unsigned_t<S>(_STD numeric_limits<S>::min())))},
+			S{_GCEM ceil(_GCEM log10(_STD make_unsigned_t<S>(_STD numeric_limits<S>::max())))}
+		))};
+
+		_IMPL PrintRow(ostream, matrix, width, 0);
+		for (Dimension r{1}; r < R; ++r)
+			_IMPL PrintRow(ostream << '\n', matrix, width, r);
+		return ostream;
+	}
+
+	template<Scalar S1, Scalar S2, Dimension R1, Dimension R2, Dimension N1, Dimension N2, Dimension... N1s, Dimension... N2s>
+	constexpr auto OuterProduct(const Tensor<S1, R1, N1, N1s...>& tensor1, const Tensor<S2, R2, N2, N2s...>& tensor2) noexcept
+	{
+		if constexpr (R1 == 0)
+			return static_cast<_IMPL CT<S1, S2>>(tensor1) * tensor2;
+		else
+		{
+			Tensor<_IMPL CT<S1, S2>, R1 + R2, N1, N1s..., N2, N2s...> result;
+			for (Dimension n{}; n < N1; ++n)
+				result[n] = OuterProduct(tensor1[n], tensor2);
+			return result;
+		}
+	}
+
+	template<Scalar S1, Scalar S2, Dimension R, Dimension N, Dimension... Ns>
+	constexpr auto InnerProduct(const Tensor<S1, R, N, Ns...>& tensor1, const Tensor<S2, R, N, Ns...>& tensor2) noexcept -> _IMPL CT<S1, S2>
+	{
+		_IMPL CT<S1, S2> sum{};
+		[&sum]<Dimension RL, Dimension NL, Dimension... NLs>(this auto&& self, const Tensor<_IMPL CT<S1, S2>, RL, NL, NLs...>& tensor) -> void
+		{
+			if constexpr (RL == 0)
+				sum += static_cast<_IMPL CT<S1, S2>>(tensor);
+			else for (Dimension n{}; n < NL; ++n)
+				self(tensor[n]);
+		}(Tensor<_IMPL CT<S1, S2>, R, N, Ns...>{tensor1 * tensor2});
+		return sum;
+	}
+
 	// Tensor<S, 0>
 	// NOTE: intellisense doesn't think these two are valid even though they are.
 	// Keep them at the bottom of this file, even though they're out of order.
@@ -540,7 +623,7 @@ export namespace nd
 	template<Scalar S>
 	template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
 	constexpr Tensor<S, 0>::Tensor(const S2& scalar) noexcept
-		: m_Scalar{staic_cast<S>(scalar)}
+		: m_Scalar{static_cast<S>(scalar)}
 	{
 
 	}

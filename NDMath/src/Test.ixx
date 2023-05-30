@@ -78,13 +78,54 @@ export namespace test
 		a = 2 * a;
 		a = 2 / a;
 
-		//Matrix4f x
-		//{
-		//	0, true, 2.0, 3.0f,
-		//	4, 5, 6, 7,
-		//	8, 9, 10, -128,
-		//	0, 13, 14, -1
-		//};
+		Matrix4f m;
+		Matrix6f n = 3;
+		Matrix8f o = n;
+		Matrix2f p = o;
+
+		m = 2;
+		n = 2;
+		m = n;
+		n = m;
+
+		m += 5;
+		m = m + 5;
+		m += n;
+		m = m + n;
+
+		m -= 5;
+		m = m - 5;
+		m -= n;
+		m = m - n;
+
+		m *= 5;
+		m = m * 5;
+		m *= n;
+		m = m * n;
+
+		m /= 5;
+		m = m / 5;
+		m /= n;
+		m = m / n;
+
+		m = 2 + m;
+		m = 2 - m;
+		m = 2 * m;
+		m = 2 / m;
+
+		_STD cout << m.at<3>() << '\n'; // compiles (good)
+		//m.at<4>(); // doesn't compile (good)
+		_STD cout << n.at<5>() << '\n'; // compiles (good)
+		//n.at<6>(); // doesn't compile (good)
+		_STD cout << (m != m) << '\n';
+
+		Matrix4f x
+		{
+			0, true, 2.0, 3.0f,
+			4, 5, 6, 7,
+			8, 9, 10, -128,
+			0, 13, 14, -1
+		};
 
 		//auto y{Determinant(x)};
 		//auto z{Inverse(x)};
@@ -92,6 +133,14 @@ export namespace test
 		//_STD cout << x << '\n' << '\n';
 		//_STD cout << y << '\n' << '\n';
 		//_STD cout << z << '\n' << '\n';
+
+
+		Vector4f _a{1, 2, 3, 4};
+		Vector3f _b{5, 6, 7};
+
+		auto _c{OuterProduct(_a, x)};
+		_STD cout << InnerProduct(_a, _a) << ' ' << InnerProduct(_b, _b) << '\n';
+
 
 		_STD cin.get();
 	}

@@ -7,7 +7,6 @@ export module nd.vector;
 import nd.types;
 import nd.impl;
 import nd.tensor;
-import <iostream>;
 import <algorithm>;
 
 #define _ND ::nd::
@@ -100,9 +99,6 @@ export namespace nd
 
 	template<Scalar S, Scalar S2> requires(_STD is_convertible_v<S2, S>)
 	constexpr auto Cross(const Vector<S, 7>& vector1, const Vector<S2, 7>& vector2) noexcept -> Vector<_IMPL CT<S, S2>, 7>;
-
-	template<Scalar S, Dimension N>
-	auto operator<<(_STD ostream& ostream, const Vector<S, N>& vector) -> _STD ostream&;
 
 	// Aliases
 
@@ -322,14 +318,5 @@ export namespace nd
 			v1[6] * v2[1] - v1[1] * v2[6] + v1[0] * v2[4] - v1[4] * v2[0] + v1[2] * v2[3] - v1[3] * v2[2],
 			v1[0] * v2[2] - v1[2] * v2[0] + v1[1] * v2[5] - v1[5] * v2[1] + v1[3] * v2[4] - v1[4] * v2[3]
 		};
-	}
-
-	template<Scalar S, Dimension N>
-	auto operator<<(_STD ostream& ostream, const Vector<S, N>& vector) -> _STD ostream&
-	{
-		ostream << '<' << vector[0];
-		for (Dimension n{1}; n < N; ++n)
-			ostream << ',' << vector[n];
-		return ostream << '>';
 	}
 }
