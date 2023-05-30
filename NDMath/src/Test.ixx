@@ -134,13 +134,11 @@ export namespace test
 		//_STD cout << y << '\n' << '\n';
 		//_STD cout << z << '\n' << '\n';
 
-
 		Vector4f _a{1, 2, 3, 4};
 		Vector3f _b{5, 6, 7};
 
 		auto _c{OuterProduct(_a, x)};
 		_STD cout << InnerProduct(_a, _a) << ' ' << InnerProduct(_b, _b) << '\n';
-
 
 		_STD cin.get();
 	}

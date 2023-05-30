@@ -23,7 +23,7 @@ export namespace nd
 
 		// Collides with copy constructor if requires is used instead of _STD enable_if_t.
 		template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-		constexpr Matrix(const S2& scalar) noexcept;
+		constexpr Matrix(S2 scalar) noexcept;
 
 		template<Scalar S2, Dimension C2, Dimension R2> requires(_STD is_convertible_v<S2, S>)
 		constexpr Matrix(const Matrix<S2, C2, R2>& matrix) noexcept;
@@ -54,7 +54,7 @@ export namespace nd
 	public:
 	private:
 		template<Dimension C2, Dimension R2, Scalar S2, Scalar... Scalars>
-		constexpr auto Fill(const S2& scalar, Scalars&&... scalars) -> void;
+		constexpr auto Fill(S2 scalar, Scalars&&... scalars) -> void;
 	private:
 		using Tensor<S, 2, C, R>::m_Scalars;
 	};
@@ -146,7 +146,7 @@ export namespace nd
 
 	template<Scalar S, Dimension C, Dimension R>
 	template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr Matrix<S, C, R>::Matrix(const S2& scalar) noexcept
+	constexpr Matrix<S, C, R>::Matrix(S2 scalar) noexcept
 	{
 		if (scalar != S{})
 			for (Dimension cr{}; cr < _GCEM min(C, R); ++cr)
@@ -192,7 +192,7 @@ export namespace nd
 
 	template<Scalar S, Dimension C, Dimension R>
 	template<Dimension C2, Dimension R2, Scalar S2, Scalar... Scalars>
-	constexpr auto Matrix<S, C, R>::Fill(const S2& scalar, Scalars&&... scalars) -> void
+	constexpr auto Matrix<S, C, R>::Fill(S2 scalar, Scalars&&... scalars) -> void
 	{
 		m_Scalars[C - C2][R - R2] = static_cast<S>(scalar);
 		if constexpr (C2 > 1)

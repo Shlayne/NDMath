@@ -42,7 +42,7 @@ export namespace nd
 		constexpr operator Vector<S2, N2>() const noexcept;
 	private:
 		template<Dimension N2, Scalar S2, typename... Args> requires(N2 >= 1 && _STD is_convertible_v<S2, S>)
-		constexpr auto Fill(const S2& scalar, Args&&... args) noexcept -> void;
+		constexpr auto Fill(S2 scalar, Args&&... args) noexcept -> void;
 
 		template<Dimension N2, Scalar S2, Dimension N3, typename... Args> requires(N2 >= N3 && _STD is_convertible_v<S2, S>)
 		constexpr auto Fill(const Vector<S2, N3>& vector, Args&&... args) noexcept -> void;
@@ -125,7 +125,7 @@ namespace nd::impl
 	};
 
 	template<Scalar S, Dimension N>
-	constexpr auto Apply(S(*func)(const S&), const Vector<S, N>& vector) -> Vector<S, N>
+	constexpr auto Apply(S(*func)(S), const Vector<S, N>& vector) -> Vector<S, N>
 	{
 		Vector<S, N> result;
 		for (Dimension n{}; n < N; ++n)
@@ -134,7 +134,7 @@ namespace nd::impl
 	}
 
 	template<Scalar S, Dimension N>
-	constexpr auto Apply(S(*func)(const S&, const S&), const Vector<S, N>& vector1, const Vector<S, N>& vector2) -> Vector<S, N>
+	constexpr auto Apply(S(*func)(S, S), const Vector<S, N>& vector1, const Vector<S, N>& vector2) -> Vector<S, N>
 	{
 		Vector<S, N> result;
 		for (Dimension n{}; n < N; ++n)
@@ -143,7 +143,7 @@ namespace nd::impl
 	}
 
 	template<Scalar S, Dimension N>
-	constexpr auto Apply(S(*func)(const S&, const S&, const S&), const Vector<S, N> vector1, const Vector<S, N>& vector2, const Vector<S, N>& vector3) -> Vector<S, N>
+	constexpr auto Apply(S(*func)(S, S, S), const Vector<S, N> vector1, const Vector<S, N>& vector2, const Vector<S, N>& vector3) -> Vector<S, N>
 	{
 		Vector<S, N> result;
 		for (Dimension n{}; n < N; ++n)
@@ -152,7 +152,7 @@ namespace nd::impl
 	}
 
 	template<Scalar S, Dimension N>
-	constexpr auto Apply(S(*func)(const S&, const S&, const S&), const Vector<S, N> vector1, const Vector<S, N>& vector2, const S& scalar) -> Vector<S, N>
+	constexpr auto Apply(S(*func)(S, S, S), const Vector<S, N> vector1, const Vector<S, N>& vector2, S scalar) -> Vector<S, N>
 	{
 		Vector<S, N> result;
 		for (Dimension n{}; n < N; ++n)
@@ -182,7 +182,7 @@ export namespace nd
 
 	template<Scalar S, Dimension N>
 	template<Dimension N2, Scalar S2, typename... Args> requires(N2 >= 1 && _STD is_convertible_v<S2, S>)
-	constexpr auto Vector<S, N>::Fill(const S2& scalar, Args&&... args) noexcept -> void
+	constexpr auto Vector<S, N>::Fill(S2 scalar, Args&&... args) noexcept -> void
 	{
 		m_Scalars[N - N2] = static_cast<S>(scalar);
 		if constexpr (sizeof...(Args) > 0)

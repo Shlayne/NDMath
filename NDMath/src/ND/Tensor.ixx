@@ -25,24 +25,24 @@ export namespace nd
 		constexpr Tensor() noexcept;
 
 		template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-		constexpr Tensor(const S2& scalar) noexcept;
+		constexpr Tensor(S2 scalar) noexcept;
 
 		template<Scalar S2, Dimension N2 = 0, Dimension... N2s> requires(_STD is_convertible_v<S2, S>)
 		constexpr Tensor(const Tensor<S2, R, N2, N2s...>& tensor) noexcept;
 
 		template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-		constexpr auto operator=(const S2& scalar) noexcept -> Tensor<S, R, N, Ns...>&;
+		constexpr auto operator=(S2 scalar) noexcept -> Tensor<S, R, N, Ns...>&;
 
 		template<Scalar S2, Dimension N2 = 0, Dimension... N2s> requires(_STD is_convertible_v<S2, S>)
 		constexpr auto operator=(const Tensor<S2, R, N2, N2s...>& tensor) noexcept -> Tensor<S, R, N, Ns...>&;
 	public:
 		// Scalar addition.
 		template<Scalar S2>
-		constexpr auto operator+(const S2& scalar) const noexcept -> Tensor<_IMPL CT<S, S2>, R, N, Ns...>;
+		constexpr auto operator+(S2 scalar) const noexcept -> Tensor<_IMPL CT<S, S2>, R, N, Ns...>;
 
 		// Scalar addition.
 		template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-		constexpr auto operator+=(const S2& scalar) noexcept -> Tensor<S, R, N, Ns...>&;
+		constexpr auto operator+=(S2 scalar) noexcept -> Tensor<S, R, N, Ns...>&;
 
 		// Element-wise addition.
 		template<Scalar S2, Dimension N2 = 0, Dimension... N2s>
@@ -54,11 +54,11 @@ export namespace nd
 	public:
 		// Scalar subtraction.
 		template<Scalar S2>
-		constexpr auto operator-(const S2& scalar) const noexcept -> Tensor<_IMPL CT<S, S2>, R, N, Ns...>;
+		constexpr auto operator-(S2 scalar) const noexcept -> Tensor<_IMPL CT<S, S2>, R, N, Ns...>;
 
 		// Scalar subtraction.
 		template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-		constexpr auto operator-=(const S2& scalar) noexcept -> Tensor<S, R, N, Ns...>&;
+		constexpr auto operator-=(S2 scalar) noexcept -> Tensor<S, R, N, Ns...>&;
 
 		// Element-wise subtraction.
 		template<Scalar S2, Dimension N2 = 0, Dimension... N2s>
@@ -70,11 +70,11 @@ export namespace nd
 	public:
 		// Scalar multiplication.
 		template<Scalar S2>
-		constexpr auto operator*(const S2& scalar) const noexcept -> Tensor<_IMPL CT<S, S2>, R, N, Ns...>;
+		constexpr auto operator*(S2 scalar) const noexcept -> Tensor<_IMPL CT<S, S2>, R, N, Ns...>;
 
 		// Scalar multiplication.
 		template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-		constexpr auto operator*=(const S2& scalar) noexcept -> Tensor<S, R, N, Ns...>&;
+		constexpr auto operator*=(S2 scalar) noexcept -> Tensor<S, R, N, Ns...>&;
 
 		// Element-wise multiplication.
 		template<Scalar S2, Dimension N2 = 0, Dimension... N2s>
@@ -86,11 +86,11 @@ export namespace nd
 	public:
 		// Scalar division.
 		template<Scalar S2>
-		constexpr auto operator/(const S2& scalar) const noexcept -> Tensor<_IMPL CT<S, S2>, R, N, Ns...>;
+		constexpr auto operator/(S2 scalar) const noexcept -> Tensor<_IMPL CT<S, S2>, R, N, Ns...>;
 
 		// Scalar division.
 		template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-		constexpr auto operator/=(const S2& scalar) noexcept -> Tensor<S, R, N, Ns...>&;
+		constexpr auto operator/=(S2 scalar) noexcept -> Tensor<S, R, N, Ns...>&;
 
 		// Element-wise division.
 		template<Scalar S2, Dimension N2 = 0, Dimension... N2s>
@@ -142,10 +142,10 @@ export namespace nd
 		constexpr Tensor() noexcept = default;
 
 		template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-		constexpr Tensor(const S2& scalar) noexcept;
+		constexpr Tensor(S2 scalar) noexcept;
 
 		template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-		constexpr auto operator=(const S2& scalar) noexcept -> Tensor<S, 0>&;
+		constexpr auto operator=(S2 scalar) noexcept -> Tensor<S, 0>&;
 	public:
 		constexpr operator S&() noexcept;
 		constexpr operator const S&() const noexcept;
@@ -156,16 +156,16 @@ export namespace nd
 	// External Operators
 
 	template<Scalar S, Scalar S2, Dimension R, Dimension N = 0, Dimension... Ns>
-	constexpr auto operator+(const S& scalar, const Tensor<S2, R, N, Ns...>& tensor) noexcept -> Tensor<_IMPL CT<S, S2>, R, N, Ns...>;
+	constexpr auto operator+(S scalar, const Tensor<S2, R, N, Ns...>& tensor) noexcept -> Tensor<_IMPL CT<S, S2>, R, N, Ns...>;
 
 	template<Scalar S, Scalar S2, Dimension R, Dimension N = 0, Dimension... Ns>
-	constexpr auto operator-(const S& scalar, const Tensor<S2, R, N, Ns...>& tensor) noexcept -> Tensor<_IMPL CT<S, S2>, R, N, Ns...>;
+	constexpr auto operator-(S scalar, const Tensor<S2, R, N, Ns...>& tensor) noexcept -> Tensor<_IMPL CT<S, S2>, R, N, Ns...>;
 
 	template<Scalar S, Scalar S2, Dimension R, Dimension N = 0, Dimension... Ns>
-	constexpr auto operator*(const S& scalar, const Tensor<S2, R, N, Ns...>& tensor) noexcept -> Tensor<_IMPL CT<S, S2>, R, N, Ns...>;
+	constexpr auto operator*(S scalar, const Tensor<S2, R, N, Ns...>& tensor) noexcept -> Tensor<_IMPL CT<S, S2>, R, N, Ns...>;
 
 	template<Scalar S, Scalar S2, Dimension R, Dimension N = 0, Dimension... Ns>
-	constexpr auto operator/(const S& scalar, const Tensor<S2, R, N, Ns...>& tensor) noexcept -> Tensor<_IMPL CT<S, S2>, R, N, Ns...>;
+	constexpr auto operator/(S scalar, const Tensor<S2, R, N, Ns...>& tensor) noexcept -> Tensor<_IMPL CT<S, S2>, R, N, Ns...>;
 
 	template<Scalar S, Dimension N>
 	auto operator<<(_STD ostream& ostream, const Tensor<S, 1, N>& vector) -> _STD ostream&;
@@ -209,7 +209,7 @@ export namespace nd
 	template<Scalar S, Dimension R, Dimension N, Dimension... Ns>
 	requires((R == 0 && N == 0 && sizeof...(Ns) == 0) || (_IMPL gt0_v<R, N, Ns...> && sizeof...(Ns) == R - 1))
 	template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr Tensor<S, R, N, Ns...>::Tensor(const S2& scalar) noexcept
+	constexpr Tensor<S, R, N, Ns...>::Tensor(S2 scalar) noexcept
 	{
 		for (Dimension n{}; n < N; ++n)
 			m_Scalars[n] = static_cast<S>(scalar);
@@ -227,7 +227,7 @@ export namespace nd
 	template<Scalar S, Dimension R, Dimension N, Dimension... Ns>
 	requires((R == 0 && N == 0 && sizeof...(Ns) == 0) || (_IMPL gt0_v<R, N, Ns...> && sizeof...(Ns) == R - 1))
 	template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto Tensor<S, R, N, Ns...>::operator=(const S2& scalar) noexcept -> Tensor<S, R, N, Ns...>&
+	constexpr auto Tensor<S, R, N, Ns...>::operator=(S2 scalar) noexcept -> Tensor<S, R, N, Ns...>&
 	{
 		for (Dimension n{}; n < N; ++n)
 			m_Scalars[n] = static_cast<S>(scalar);
@@ -251,7 +251,7 @@ export namespace nd
 	template<Scalar S, Dimension R, Dimension N, Dimension... Ns>
 	requires((R == 0 && N == 0 && sizeof...(Ns) == 0) || (_IMPL gt0_v<R, N, Ns...> && sizeof...(Ns) == R - 1))
 	template<Scalar S2>
-	constexpr auto Tensor<S, R, N, Ns...>::operator+(const S2& scalar) const noexcept -> Tensor<_IMPL CT<S, S2>, R, N, Ns...>
+	constexpr auto Tensor<S, R, N, Ns...>::operator+(S2 scalar) const noexcept -> Tensor<_IMPL CT<S, S2>, R, N, Ns...>
 	{
 		return static_cast<Tensor<_IMPL CT<S, S2>, R, N, Ns...>>(*this) += static_cast<_IMPL CT<S, S2>>(scalar);
 	}
@@ -259,7 +259,7 @@ export namespace nd
 	template<Scalar S, Dimension R, Dimension N, Dimension... Ns>
 	requires((R == 0 && N == 0 && sizeof...(Ns) == 0) || (_IMPL gt0_v<R, N, Ns...> && sizeof...(Ns) == R - 1))
 	template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto Tensor<S, R, N, Ns...>::operator+=(const S2& scalar) noexcept -> Tensor<S, R, N, Ns...>&
+	constexpr auto Tensor<S, R, N, Ns...>::operator+=(S2 scalar) noexcept -> Tensor<S, R, N, Ns...>&
 	{
 		for (auto& s : m_Scalars)
 			s += static_cast<S>(scalar);
@@ -288,7 +288,7 @@ export namespace nd
 	template<Scalar S, Dimension R, Dimension N, Dimension... Ns>
 	requires((R == 0 && N == 0 && sizeof...(Ns) == 0) || (_IMPL gt0_v<R, N, Ns...> && sizeof...(Ns) == R - 1))
 	template<Scalar S2>
-	constexpr auto Tensor<S, R, N, Ns...>::operator-(const S2& scalar) const noexcept -> Tensor<_IMPL CT<S, S2>, R, N, Ns...>
+	constexpr auto Tensor<S, R, N, Ns...>::operator-(S2 scalar) const noexcept -> Tensor<_IMPL CT<S, S2>, R, N, Ns...>
 	{
 		return static_cast<Tensor<_IMPL CT<S, S2>, R, N, Ns...>>(*this) -= static_cast<_IMPL CT<S, S2>>(scalar);
 	}
@@ -296,7 +296,7 @@ export namespace nd
 	template<Scalar S, Dimension R, Dimension N, Dimension... Ns>
 	requires((R == 0 && N == 0 && sizeof...(Ns) == 0) || (_IMPL gt0_v<R, N, Ns...> && sizeof...(Ns) == R - 1))
 	template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto Tensor<S, R, N, Ns...>::operator-=(const S2& scalar) noexcept -> Tensor<S, R, N, Ns...>&
+	constexpr auto Tensor<S, R, N, Ns...>::operator-=(S2 scalar) noexcept -> Tensor<S, R, N, Ns...>&
 	{
 		for (auto& s : m_Scalars)
 			s -= static_cast<S>(scalar);
@@ -325,7 +325,7 @@ export namespace nd
 	template<Scalar S, Dimension R, Dimension N, Dimension... Ns>
 	requires((R == 0 && N == 0 && sizeof...(Ns) == 0) || (_IMPL gt0_v<R, N, Ns...> && sizeof...(Ns) == R - 1))
 	template<Scalar S2>
-	constexpr auto Tensor<S, R, N, Ns...>::operator*(const S2& scalar) const noexcept -> Tensor<_IMPL CT<S, S2>, R, N, Ns...>
+	constexpr auto Tensor<S, R, N, Ns...>::operator*(S2 scalar) const noexcept -> Tensor<_IMPL CT<S, S2>, R, N, Ns...>
 	{
 		return static_cast<Tensor<_IMPL CT<S, S2>, R, N, Ns...>>(*this) *= static_cast<_IMPL CT<S, S2>>(scalar);
 	}
@@ -333,7 +333,7 @@ export namespace nd
 	template<Scalar S, Dimension R, Dimension N, Dimension... Ns>
 	requires((R == 0 && N == 0 && sizeof...(Ns) == 0) || (_IMPL gt0_v<R, N, Ns...> && sizeof...(Ns) == R - 1))
 	template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto Tensor<S, R, N, Ns...>::operator*=(const S2& scalar) noexcept -> Tensor<S, R, N, Ns...>&
+	constexpr auto Tensor<S, R, N, Ns...>::operator*=(S2 scalar) noexcept -> Tensor<S, R, N, Ns...>&
 	{
 		for (auto& s : m_Scalars)
 			s *= static_cast<S>(scalar);
@@ -362,7 +362,7 @@ export namespace nd
 	template<Scalar S, Dimension R, Dimension N, Dimension... Ns>
 	requires((R == 0 && N == 0 && sizeof...(Ns) == 0) || (_IMPL gt0_v<R, N, Ns...> && sizeof...(Ns) == R - 1))
 	template<Scalar S2>
-	constexpr auto Tensor<S, R, N, Ns...>::operator/(const S2& scalar) const noexcept -> Tensor<_IMPL CT<S, S2>, R, N, Ns...>
+	constexpr auto Tensor<S, R, N, Ns...>::operator/(S2 scalar) const noexcept -> Tensor<_IMPL CT<S, S2>, R, N, Ns...>
 	{
 		return static_cast<Tensor<_IMPL CT<S, S2>, R, N, Ns...>>(*this) /= static_cast<_IMPL CT<S, S2>>(scalar);
 	}
@@ -370,7 +370,7 @@ export namespace nd
 	template<Scalar S, Dimension R, Dimension N, Dimension... Ns>
 	requires((R == 0 && N == 0 && sizeof...(Ns) == 0) || (_IMPL gt0_v<R, N, Ns...> && sizeof...(Ns) == R - 1))
 	template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto Tensor<S, R, N, Ns...>::operator/=(const S2& scalar) noexcept -> Tensor<S, R, N, Ns...>&
+	constexpr auto Tensor<S, R, N, Ns...>::operator/=(S2 scalar) noexcept -> Tensor<S, R, N, Ns...>&
 	{
 		for (auto& s : m_Scalars)
 			s /= static_cast<S>(scalar);
@@ -532,25 +532,25 @@ export namespace nd
 	// External Operators
 
 	template<Scalar S, Scalar S2, Dimension R, Dimension N, Dimension... Ns>
-	constexpr auto operator+(const S& scalar, const Tensor<S2, R, N, Ns...>& tensor) noexcept -> Tensor<_IMPL CT<S, S2>, R, N, Ns...>
+	constexpr auto operator+(S scalar, const Tensor<S2, R, N, Ns...>& tensor) noexcept -> Tensor<_IMPL CT<S, S2>, R, N, Ns...>
 	{
 		return Tensor<_IMPL CT<S, S2>, R, N, Ns...>{scalar} += tensor;
 	}
 
 	template<Scalar S, Scalar S2, Dimension R, Dimension N, Dimension... Ns>
-	constexpr auto operator-(const S& scalar, const Tensor<S2, R, N, Ns...>& tensor) noexcept -> Tensor<_IMPL CT<S, S2>, R, N, Ns...>
+	constexpr auto operator-(S scalar, const Tensor<S2, R, N, Ns...>& tensor) noexcept -> Tensor<_IMPL CT<S, S2>, R, N, Ns...>
 	{
 		return Tensor<_IMPL CT<S, S2>, R, N, Ns...>{scalar} -= tensor;
 	}
 
 	template<Scalar S, Scalar S2, Dimension R, Dimension N, Dimension... Ns>
-	constexpr auto operator*(const S& scalar, const Tensor<S2, R, N, Ns...>& tensor) noexcept -> Tensor<_IMPL CT<S, S2>, R, N, Ns...>
+	constexpr auto operator*(S scalar, const Tensor<S2, R, N, Ns...>& tensor) noexcept -> Tensor<_IMPL CT<S, S2>, R, N, Ns...>
 	{
 		return Tensor<_IMPL CT<S, S2>, R, N, Ns...>{scalar} *= tensor;
 	}
 
 	template<Scalar S, Scalar S2, Dimension R, Dimension N, Dimension... Ns>
-	constexpr auto operator/(const S& scalar, const Tensor<S2, R, N, Ns...>& tensor) noexcept -> Tensor<_IMPL CT<S, S2>, R, N, Ns...>
+	constexpr auto operator/(S scalar, const Tensor<S2, R, N, Ns...>& tensor) noexcept -> Tensor<_IMPL CT<S, S2>, R, N, Ns...>
 	{
 		return Tensor<_IMPL CT<S, S2>, R, N, Ns...>{scalar} /= tensor;
 	}
@@ -622,7 +622,7 @@ export namespace nd
 
 	template<Scalar S>
 	template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr Tensor<S, 0>::Tensor(const S2& scalar) noexcept
+	constexpr Tensor<S, 0>::Tensor(S2 scalar) noexcept
 		: m_Scalar{static_cast<S>(scalar)}
 	{
 
@@ -630,7 +630,7 @@ export namespace nd
 
 	template<Scalar S>
 	template<Scalar S2> requires(_STD is_convertible_v<S2, S>)
-	constexpr auto Tensor<S, 0>::operator=(const S2& scalar) noexcept -> Tensor<S, 0>&
+	constexpr auto Tensor<S, 0>::operator=(S2 scalar) noexcept -> Tensor<S, 0>&
 	{
 		m_Scalar = static_cast<S>(scalar);
 		return *this;
