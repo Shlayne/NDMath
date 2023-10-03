@@ -1,14 +1,24 @@
-export module test;
-
-import nd;
-import <iostream>;
+#include "ND/ND.hpp"
+#include <iostream>
 
 using namespace nd;
 
-export namespace test
+namespace test
 {
-	auto Perform() -> void
+	template <Scalar S>
+	S RandomRange(S min, S max)
 	{
+		return (rand() / static_cast<std::common_type_t<S, float>>(RAND_MAX)) * (max - min) + min;
+	}
+
+	void Perform()
+	{
+		{
+			time_t time_ = time(nullptr);
+			srand(static_cast<unsigned int>(time_) ^ static_cast<unsigned int>(time_ >> 32));
+			static_cast<void>(rand());
+		}
+
 		//constexpr Tensor<float, 0> a;
 		//constexpr Tensor<float, 1, 5> b;
 		//constexpr Tensor<float, 2, 5, 3> c;
@@ -28,9 +38,9 @@ export namespace test
 		a[2] = -4;
 		a[3] = 2.0;
 		//a[4] = 5.7; // aborts (good)
-		_STD cout << (a != a) << '\n';
+		std::cout << (a != a) << '\n';
 
-		_STD cout << a.at<3>() << '\n'; // compiles (good)
+		std::cout << a.at<3>() << '\n'; // compiles (good)
 		//a.at<4>(); // doesn't compile (good)
 
 		//Vector4f b{a * 2}; // for some reason, this crashes intellisense... :/
@@ -40,11 +50,11 @@ export namespace test
 		Vector3f e{Vector4f{5.9, 2.6f}};
 		Vector1f f = b;
 
-		_STD cout << a.Hash() << '\n';
+		std::cout << a.Hash() << '\n';
 
-		//_STD cout << b << '\n';
+		//std::cout << b << '\n';
 
-		//Tensor<long, 1, 4> c = static_cast<Tensor<int, 1, 4>>(a); // TODO: doesn't compile.
+		//Tensor<long, 1, 4> c = a; // TODO: doesn't compile.
 		//auto c = static_cast<Tensor<float, 1, 4>>(a);
 
 		e = f;
@@ -113,11 +123,11 @@ export namespace test
 		m = 2 * m;
 		m = 2 / m;
 
-		_STD cout << m.at<3>() << '\n'; // compiles (good)
+		std::cout << m.at<3>() << '\n'; // compiles (good)
 		//m.at<4>(); // doesn't compile (good)
-		_STD cout << n.at<5>() << '\n'; // compiles (good)
+		std::cout << n.at<5>() << '\n'; // compiles (good)
 		//n.at<6>(); // doesn't compile (good)
-		_STD cout << (m != m) << '\n';
+		std::cout << (m != m) << '\n';
 
 		Matrix4f x
 		{
@@ -130,16 +140,41 @@ export namespace test
 		//auto y{Determinant(x)};
 		//auto z{Inverse(x)};
 
-		//_STD cout << x << '\n' << '\n';
-		//_STD cout << y << '\n' << '\n';
-		//_STD cout << z << '\n' << '\n';
+		//std::cout << x << '\n' << '\n';
+		//std::cout << y << '\n' << '\n';
+		//std::cout << z << '\n' << '\n';
 
 		Vector4f _a{1, 2, 3, 4};
 		Vector3f _b{5, 6, 7};
 
 		auto _c{OuterProduct(_a, x)};
-		_STD cout << InnerProduct(_a, _a) << ' ' << InnerProduct(_b, _b) << '\n';
+		std::cout << InnerProduct(_a, _a) << ' ' << InnerProduct(_b, _b) << '\n';
 
-		_STD cin.get();
+
+		// example hyperplane basis vectors
+		Matrix4f hyperplaneBases
+		{
+			1, 0, 3, 2,
+			0, 0, 8, 0,
+			2, 1, 0, 0,
+			0, 4, 0, 7,
+		};
+
+		for (Dimension n{}; n < 4; ++n)
+			hyperplaneBases[n] = Normalize(Vector4f{hyperplaneBases[n]}); // TODO: make this not require manual Vector4f cast.
+		std::cout << "Hyperplane Bases:\n" << hyperplaneBases << '\n';
+
+		// example bounds where
+		// x is bounded to [-3, 10],
+		// y is bounded to [1, 3],
+		// z is bounded to [0, 0],
+		// w is bounded to [0, 0],
+		Vector4f minBounds = {0.0f, 0.0f, 10.0f, -10.0f};
+		Vector4f maxBounds = {1.0f, -1.0f, 100.0f, -100.0f};
+
+		Vector4f randomPoint = RandomPointInBoundedHyperplane(hyperplaneBases, minBounds, maxBounds, test::RandomRange<float>);
+		std::cout << "Random Point: " << randomPoint << '\n';
+
+		std::cin.get();
 	}
 }

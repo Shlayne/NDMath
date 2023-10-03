@@ -1,11 +1,11 @@
-export module nd.types;
+#pragma once
 
-import <concepts>;
+#include <concepts>
 
-export namespace nd
+namespace nd
 {
 	using Dimension = size_t;
 
-	template<typename T>
+	template <typename T>
 	concept Scalar = _STD integral<T> || _STD floating_point<T>;
 }

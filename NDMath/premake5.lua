@@ -14,7 +14,6 @@ project "NDMath"
 		"src/**.hpp",
 		"src/**.cpp",
 		"src/**.inl",
-		"src/**.ixx"
 	}
 
 	includedirs {
@@ -26,18 +25,9 @@ project "NDMath"
 	filter "system:windows"
 		systemversion "latest"
 		defines "SYSTEM_WINDOWS"
-
-		-- Modules are OP.
-		scanformoduledependencies "True"
-		enablemodules "On"
-
 		-- msvc doesn't provide __VA_OPT__ by default; this fixes that.
 		usestdpreproc "On"
-
-		-- These two are required because visual studio precompiled their module
-		-- ifc's with dynamic linking and imprecise floating point operations.
-		staticruntime "Off"
-		floatingpoint "None"
+		enablemodules "Off"
 
 	filter "configurations:Debug"
 		runtime "Debug"

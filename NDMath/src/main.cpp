@@ -1,6 +1,6 @@
-import test;
+#include "test.hpp"
 
-auto main() -> int
+int main()
 {
 	test::Perform();
 	return 0;
