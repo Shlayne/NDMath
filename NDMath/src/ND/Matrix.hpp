@@ -92,7 +92,7 @@ namespace nd
 			else if constexpr (R2 > 1)
 				Fill<C, R2 - 1>(_STD forward<S2s>(scalars)...);
 		}
-	private:
+	protected:
 		using Tensor<S, C, R>::m_Scalars;
 	};
 

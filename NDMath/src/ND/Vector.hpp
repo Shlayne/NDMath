@@ -70,8 +70,55 @@ namespace nd
 			if constexpr (sizeof...(Args) > 0)
 				Fill<N2 - N3>(_STD forward<Args>(args)...);
 		}
-	private:
+	protected:
 		using Tensor<S, N>::m_Scalars;
+	};
+
+	// Vector of length 1.
+	// When passed to functions that require a Normal,
+	// this will not be normalized, however, Vectors
+	// will be. If you already have a Normal, pass it
+	// as usual, and if you have an unnormalized Vector,
+	// also pass it as usual, and it will be normalized
+	// automatically.
+	// This struct should be essentially immutable to
+	// ensure it is always normalized. If you want to
+	// change it, cast it back to a Vector (unary +/-
+	// also work).
+	template <Scalar S, Dimension N>
+	struct Normal : public Vector<S, N>
+	{
+	public:
+		// No default constructor since that would be
+		// all zeros, and hence violate the definition.
+		constexpr Normal() noexcept = delete;
+
+		constexpr Normal(const Normal&) noexcept = default;
+		constexpr Normal& operator=(const Normal&) noexcept = default;
+
+		constexpr Normal(const Tensor<S, N>& vector);
+	public:
+		using Vector<S, N>::operator+; // also handles unary plus.
+		using Vector<S, N>::operator-; // also handles unary minus.
+		using Vector<S, N>::operator*;
+		using Vector<S, N>::operator/;
+		using Vector<S, N>::operator==;
+		using Vector<S, N>::operator!=;
+	public:
+		template <Dimension N2>
+		requires(N2 < N)
+		constexpr const S& at() const noexcept
+		{
+			return m_Scalars[N2];
+		}
+
+		constexpr const S& operator[](Dimension n) const noexcept
+		{
+			//__assume(n < N);
+			return m_Scalars[n];
+		}
+	protected:
+		using Vector<S, N>::m_Scalars;
 	};
 
 	// Serialization.
@@ -151,9 +198,9 @@ namespace nd
 	}
 
 	template <Scalar S, Dimension N>
-	constexpr Vector<S, N> Normalize(const Tensor<S, N>& vector) noexcept
+	constexpr Normal<S, N> Normalize(const Tensor<S, N>& vector) noexcept
 	{
-		return vector / _ND Length(vector);
+		return vector;
 	}
 
 	template <Scalar S1, Scalar S2, Dimension N>
@@ -249,6 +296,16 @@ namespace nd
 			v1[6] * v2[1] - v1[1] * v2[6] + v1[0] * v2[4] - v1[4] * v2[0] + v1[2] * v2[3] - v1[3] * v2[2],
 			v1[0] * v2[2] - v1[2] * v2[0] + v1[1] * v2[5] - v1[5] * v2[1] + v1[3] * v2[4] - v1[4] * v2[3]
 		};
+	}
+
+	// Normal
+
+	template <Scalar S, Dimension N>
+	constexpr Normal<S, N>::Normal(const Tensor<S, N>& vector)
+	{
+		Tensor<S, N> normalized = vector / _ND Length(vector);
+		for (Dimension n{}; n < N; ++n)
+			m_Scalars[n] = normalized[n];
 	}
 
 	// Aliases
