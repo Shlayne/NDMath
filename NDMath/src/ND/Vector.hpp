@@ -81,10 +81,9 @@ namespace nd
 	// as usual, and if you have an unnormalized Vector,
 	// also pass it as usual, and it will be normalized
 	// automatically.
-	// This struct should be essentially immutable to
-	// ensure it is always normalized. If you want to
-	// change it, cast it back to a Vector (unary +/-
-	// also work).
+	// This struct shall be immutable to ensure it is
+	// always normalized. If you want to change it,
+	// cast it back to a Vector (unary +/- also work).
 	template <Scalar S, Dimension N>
 	struct Normal : public Vector<S, N>
 	{
@@ -103,6 +102,8 @@ namespace nd
 		using Vector<S, N>::operator-; // also handles unary minus.
 		using Vector<S, N>::operator*;
 		using Vector<S, N>::operator/;
+		using Vector<S, N>::at;
+		using Vector<S, N>::operator[];
 		using Vector<S, N>::operator==;
 		using Vector<S, N>::operator!=;
 
@@ -139,19 +140,12 @@ namespace nd
 		template <Scalar S2, Dimension N2>
 		requires(_STD is_convertible_v<S2, S>)
 		constexpr Tensor<S, N>& operator/=(const Tensor<S2, N2>&) = delete;
-	public:
+		
 		template <Dimension N2>
 		requires(N2 < N)
-		constexpr const S& at() const noexcept
-		{
-			return m_Scalars[N2];
-		}
+		constexpr S& at() noexcept = delete;
 
-		constexpr const S& operator[](Dimension n) const noexcept
-		{
-			//__assume(n < N);
-			return m_Scalars[n];
-		}
+		constexpr S& operator[](Dimension) noexcept = delete;
 	protected:
 		using Vector<S, N>::m_Scalars;
 	};

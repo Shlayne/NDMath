@@ -179,8 +179,9 @@ namespace test
 		Vector4f minBounds = {0.0f, 0.0f, 10.0f, -10.0f};
 		Vector4f maxBounds = {1.0f, -1.0f, 100.0f, -100.0f};
 
-		auto nml = Normalize(minBounds);
-		nml = maxBounds;
+		const auto nml = Normalize(maxBounds);
+		std::cout << "Normal.x: " << nml[0] << '\n';
+		//nml = maxBounds;
 		std::cout << "Normal: " << nml << '\n';
 		std::cout << "Normal Length: " << Length(nml) << '\n';
 		auto nml_1 = nml + 2; // compiles (good)
