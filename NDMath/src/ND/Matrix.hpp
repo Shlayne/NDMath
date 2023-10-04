@@ -13,7 +13,7 @@ namespace nd
 {
 	// Columns are the first index, rows are second.
 	template <Scalar S, Dimension C, Dimension R = C>
-	struct Matrix : public Tensor<S, 2, C, R>
+	struct Matrix : public Tensor<S, C, R>
 	{
 	public:
 		// Constructs an identity matrix.
@@ -35,20 +35,20 @@ namespace nd
 		requires(sizeof...(S2s) == C * R && _IMPL all_true_v<_STD is_convertible_v<S2s, S>...>)
 		constexpr Matrix(S2s&&... scalars) noexcept;
 
-		using Tensor<S, 2, C, R>::operator=;
+		using Tensor<S, C, R>::operator=;
 	public:
-		using Tensor<S, 2, C, R>::operator+; // also handles unary plus.
-		using Tensor<S, 2, C, R>::operator+=;
-		using Tensor<S, 2, C, R>::operator-; // also handles unary plus.
-		using Tensor<S, 2, C, R>::operator-=;
-		using Tensor<S, 2, C, R>::operator*;
-		using Tensor<S, 2, C, R>::operator*=;
-		using Tensor<S, 2, C, R>::operator/;
-		using Tensor<S, 2, C, R>::operator/=;
-		using Tensor<S, 2, C, R>::at;
-		using Tensor<S, 2, C, R>::operator[];
-		using Tensor<S, 2, C, R>::operator==;
-		using Tensor<S, 2, C, R>::operator!=;
+		using Tensor<S, C, R>::operator+; // also handles unary plus.
+		using Tensor<S, C, R>::operator+=;
+		using Tensor<S, C, R>::operator-; // also handles unary plus.
+		using Tensor<S, C, R>::operator-=;
+		using Tensor<S, C, R>::operator*;
+		using Tensor<S, C, R>::operator*=;
+		using Tensor<S, C, R>::operator/;
+		using Tensor<S, C, R>::operator/=;
+		using Tensor<S, C, R>::at;
+		using Tensor<S, C, R>::operator[];
+		using Tensor<S, C, R>::operator==;
+		using Tensor<S, C, R>::operator!=;
 	public:
 		template <Scalar S2, Dimension C2>
 		constexpr Matrix<_IMPL CT<S, S2>, C2, R> operator*(const Matrix<S2, C2, C>& matrix) const noexcept;
@@ -58,7 +58,7 @@ namespace nd
 		template <Dimension C2, Dimension R2, Scalar S2, Scalar... S2s>
 		constexpr void Fill(S2 scalar, S2s&&... scalars);
 	private:
-		using Tensor<S, 2, C, R>::m_Scalars;
+		using Tensor<S, C, R>::m_Scalars;
 	};
 
 	// External Operators
@@ -155,7 +155,7 @@ namespace nd
 	template <Scalar S2, Dimension C2, Dimension R2>
 	requires(_STD is_convertible_v<S2, S>)
 	constexpr Matrix<S, C, R>::Matrix(const Matrix<S2, C2, R2>& matrix) noexcept
-		: Tensor<S, 2, C, R>{matrix}
+		: Tensor<S, C, R>{matrix}
 	{
 		for (Dimension cr{_GCEM min(C2, R2)}; cr < _GCEM min(C, R); ++cr)
 			m_Scalars[cr][cr] = S{1};

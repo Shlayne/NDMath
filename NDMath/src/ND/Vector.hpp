@@ -12,29 +12,29 @@
 namespace nd
 {
 	template <Scalar S, Dimension N>
-	struct Vector : public Tensor<S, 1, N>
+	struct Vector : public Tensor<S, N>
 	{
 	public:
 		template <typename... Args>
 		requires(sizeof...(Args) > 1)
 		constexpr Vector(Args&&... args) noexcept;
 
-		constexpr Vector(const Tensor<S, 1, N>& tensor) noexcept;
+		constexpr Vector(const Tensor<S, N>& tensor) noexcept;
 	public:
-		using Tensor<S, 1, N>::Tensor;
-		using Tensor<S, 1, N>::operator=;
-		using Tensor<S, 1, N>::operator+; // also handles unary plus.
-		using Tensor<S, 1, N>::operator+=;
-		using Tensor<S, 1, N>::operator-; // also handles unary minus.
-		using Tensor<S, 1, N>::operator-=;
-		using Tensor<S, 1, N>::operator*;
-		using Tensor<S, 1, N>::operator*=;
-		using Tensor<S, 1, N>::operator/;
-		using Tensor<S, 1, N>::operator/=;
-		using Tensor<S, 1, N>::at;
-		using Tensor<S, 1, N>::operator[];
-		using Tensor<S, 1, N>::operator==;
-		using Tensor<S, 1, N>::operator!=;
+		using Tensor<S, N>::Tensor;
+		using Tensor<S, N>::operator=;
+		using Tensor<S, N>::operator+; // also handles unary plus.
+		using Tensor<S, N>::operator+=;
+		using Tensor<S, N>::operator-; // also handles unary minus.
+		using Tensor<S, N>::operator-=;
+		using Tensor<S, N>::operator*;
+		using Tensor<S, N>::operator*=;
+		using Tensor<S, N>::operator/;
+		using Tensor<S, N>::operator/=;
+		using Tensor<S, N>::at;
+		using Tensor<S, N>::operator[];
+		using Tensor<S, N>::operator==;
+		using Tensor<S, N>::operator!=;
 	public:
 		// NOTE: using a base class' templated conversion operator is expliticly prohibited by C++23.
 		template <Scalar S2, Dimension N2>
@@ -49,7 +49,7 @@ namespace nd
 		requires(N2 >= N3 && _STD is_convertible_v<S2, S>)
 		constexpr void Fill(const Vector<S2, N3>& vector, Args&&... args) noexcept;
 	private:
-		using Tensor<S, 1, N>::m_Scalars;
+		using Tensor<S, N>::m_Scalars;
 	};
 
 	// Floating Methods
@@ -176,7 +176,7 @@ namespace nd
 	}
 
 	template <Scalar S, Dimension N>
-	constexpr Vector<S, N>::Vector(const Tensor<S, 1, N>& tensor) noexcept
+	constexpr Vector<S, N>::Vector(const Tensor<S, N>& tensor) noexcept
 	{
 		for (Dimension n{}; n < N; ++n)
 			m_Scalars[n] = tensor[n];

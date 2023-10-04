@@ -19,20 +19,20 @@ namespace test
 			static_cast<void>(rand());
 		}
 
-		//constexpr Tensor<float, 0> a;
-		//constexpr Tensor<float, 1, 5> b;
-		//constexpr Tensor<float, 2, 5, 3> c;
-		//constexpr Tensor<float, 3, 5, 3, 6> d;
+		//constexpr Tensor<float> a;
+		//constexpr Tensor<float, 5> b;
+		//constexpr Tensor<float, 5, 3> c;
+		//constexpr Tensor<float, 5, 3, 6> d;
 		//Tensor<float, 4, 5, 3, 6, 2> e;
 
-		//constexpr Tensor<float, 3, 3, 6, 2> e0 = e[4];
-		//constexpr Tensor<float, 2, 6, 2> e1 = e0[2];
-		//constexpr Tensor<float, 1, 2> e2 = e1[5];
-		//constexpr Tensor<float, 0> e3 = e2[1];
+		//constexpr Tensor<float, 3, 6, 2> e0 = e[4];
+		//constexpr Tensor<float, 6, 2> e1 = e0[2];
+		//constexpr Tensor<float, 2> e2 = e1[5];
+		//constexpr Tensor<float> e3 = e2[1];
 		//constexpr float e3a = e2[1];
 		//constexpr float e3b = e3;
 
-		Tensor<float, 1, 4> a;
+		Tensor<float, 4> a;
 		a[0] = 1;
 		a[1] = 3;
 		a[2] = -4;
@@ -45,7 +45,7 @@ namespace test
 
 		//Vector4f b{a * 2}; // for some reason, this crashes intellisense... :/
 
-		Tensor<float, 1, 5> b;
+		Tensor<float, 5> b;
 		b = 6;
 		Vector3f e{Vector4f{5.9, 2.6f}};
 		Vector1f f = b;
