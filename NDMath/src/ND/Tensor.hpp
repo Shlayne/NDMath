@@ -18,7 +18,7 @@ namespace nd
 	struct Tensor
 	{
 	public:
-		static constexpr Dimension Rank = sizeof...(Ns) + static_cast<Dimension>(N > 0 ? 1 : 0);
+		static constexpr Dimension Rank = static_cast<Dimension>(N > 0 ? 1 : 0) + sizeof...(Ns);
 
 		constexpr Tensor() noexcept;
 
@@ -110,7 +110,7 @@ namespace nd
 		requires(_STD is_convertible_v<S2, S>)
 		constexpr Tensor<S, N, Ns...>& operator/=(const Tensor<S2, N2, N2s...>& tensor) noexcept;
 	public:
-		constexpr Tensor<decltype(+S{}), N, Ns... >  operator+() const noexcept;
+		constexpr Tensor<decltype(+S{}), N, Ns... > operator+() const noexcept;
 		constexpr Tensor<decltype(-S{}), N, Ns...> operator-() const noexcept;
 	public:
 		template <Dimension N2>
