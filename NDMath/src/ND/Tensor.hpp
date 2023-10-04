@@ -6,7 +6,6 @@
 #include <array>
 #include <iomanip>
 #include <iostream>
-#include <utility>
 
 #define _ND ::nd::
 #define _IMPL ::nd::impl::
@@ -19,9 +18,16 @@ namespace nd
 	struct Tensor
 	{
 	public:
+		static_assert((N + ... + Ns) > 1 + sizeof...(Ns), "Cannot have tensor with only one entry, that's just a scalar.");
+
 		static constexpr Dimension Rank = static_cast<Dimension>(N > 0 ? 1 : 0) + sizeof...(Ns);
 		using SubTensor = _STD conditional_t<(Rank >= 2), Tensor<S, Ns...>, S>;
+		template <Scalar S2>
+		using CommonTensor = Tensor<_IMPL CT<S, S2>, N, Ns...>;
+		template <Scalar S2>
+		using CommonSubTensor = CommonTensor<S2>::SubTensor;
 
+	public:
 		constexpr Tensor() noexcept = default;
 
 		template <Scalar S2>
@@ -37,7 +43,7 @@ namespace nd
 		constexpr Tensor(const Tensor<S2, N2, N2s...>& tensor) noexcept
 		{
 			for (Dimension n{}; n < _GCEM min(N, N2); ++n)
-				Set(n, tensor);
+				m_Scalars[n] = static_cast<SubTensor>(tensor[n]);
 		}
 
 		template <Scalar S2>
@@ -55,7 +61,7 @@ namespace nd
 		{
 			Dimension n{};
 			for (; n < _GCEM min(N, N2); ++n)
-				Set(n, tensor);
+				m_Scalars[n] = static_cast<SubTensor>(tensor[n]);
 			if constexpr (N2 < N)
 				for (; n < N; ++n)
 					m_Scalars[n] = {};
@@ -64,9 +70,9 @@ namespace nd
 	public:
 		// Scalar addition.
 		template <Scalar S2>
-		constexpr Tensor<_IMPL CT<S, S2>, N, Ns...> operator+(S2 scalar) const noexcept
+		constexpr CommonTensor<S2> operator+(S2 scalar) const noexcept
 		{
-			return static_cast<Tensor<_IMPL CT<S, S2>, N, Ns...>>(*this) += static_cast<_IMPL CT<S, S2>>(scalar);
+			return static_cast<CommonTensor<S2>>(*this) += static_cast<_IMPL CT<S, S2>>(scalar);
 		}
 
 		// Scalar addition.
@@ -81,9 +87,9 @@ namespace nd
 
 		// Element-wise addition.
 		template <Scalar S2, Dimension N2 = 0, Dimension... N2s>
-		constexpr Tensor<_IMPL CT<S, S2>, N, Ns...> operator+(const Tensor<S2, N2, N2s...>& tensor) const noexcept
+		constexpr CommonTensor<S2> operator+(const Tensor<S2, N2, N2s...>& tensor) const noexcept
 		{
-			return static_cast<Tensor<_IMPL CT<S, S2>, N, Ns...>>(*this) += static_cast<Tensor<_IMPL CT<S, S2>, N2, N2s...>>(tensor);
+			return static_cast<CommonTensor<S2>>(*this) += static_cast<Tensor<_IMPL CT<S, S2>, N2, N2s...>>(tensor);
 		}
 
 		// Element-wise addition.
@@ -91,17 +97,16 @@ namespace nd
 		requires(_STD is_convertible_v<S2, S>)
 		constexpr Tensor<S, N, Ns...>& operator+=(const Tensor<S2, N2, N2s...>& tensor) noexcept
 		{
-			Dimension n{};
-			for (; n < _GCEM min(N, N2); ++n)
+			for (Dimension n{}; n < _GCEM min(N, N2); ++n)
 				m_Scalars[n] += tensor[n];
 			return *this;
 		}
 	public:
 		// Scalar subtraction.
 		template <Scalar S2>
-		constexpr Tensor<_IMPL CT<S, S2>, N, Ns...> operator-(S2 scalar) const noexcept
+		constexpr CommonTensor<S2> operator-(S2 scalar) const noexcept
 		{
-			return static_cast<Tensor<_IMPL CT<S, S2>, N, Ns...>>(*this) -= static_cast<_IMPL CT<S, S2>>(scalar);
+			return static_cast<CommonTensor<S2>>(*this) -= static_cast<_IMPL CT<S, S2>>(scalar);
 		}
 
 		// Scalar subtraction.
@@ -116,9 +121,9 @@ namespace nd
 
 		// Element-wise subtraction.
 		template <Scalar S2, Dimension N2 = 0, Dimension... N2s>
-		constexpr Tensor<_IMPL CT<S, S2>, N, Ns...> operator-(const Tensor<S2, N2, N2s...>& tensor) const noexcept
+		constexpr CommonTensor<S2> operator-(const Tensor<S2, N2, N2s...>& tensor) const noexcept
 		{
-			return static_cast<Tensor<_IMPL CT<S, S2>, N, Ns...>>(*this) -= static_cast<Tensor<_IMPL CT<S, S2>, N2, N2s...>>(tensor);
+			return static_cast<CommonTensor<S2>>(*this) -= static_cast<Tensor<_IMPL CT<S, S2>, N2, N2s...>>(tensor);
 		}
 
 		// Element-wise subtraction.
@@ -126,17 +131,16 @@ namespace nd
 		requires(_STD is_convertible_v<S2, S>)
 		constexpr Tensor<S, N, Ns...>& operator-=(const Tensor<S2, N2, N2s...>& tensor) noexcept
 		{
-			Dimension n{};
-			for (; n < _GCEM min(N, N2); ++n)
+			for (Dimension n{}; n < _GCEM min(N, N2); ++n)
 				m_Scalars[n] -= tensor[n];
 			return *this;
 		}
 	public:
 		// Scalar multiplication.
 		template <Scalar S2>
-		constexpr Tensor<_IMPL CT<S, S2>, N, Ns...> operator*(S2 scalar) const noexcept
+		constexpr CommonTensor<S2> operator*(S2 scalar) const noexcept
 		{
-			return static_cast<Tensor<_IMPL CT<S, S2>, N, Ns...>>(*this) *= static_cast<_IMPL CT<S, S2>>(scalar);
+			return static_cast<CommonTensor<S2>>(*this) *= static_cast<_IMPL CT<S, S2>>(scalar);
 		}
 
 		// Scalar multiplication.
@@ -151,9 +155,9 @@ namespace nd
 
 		// Element-wise multiplication.
 		template <Scalar S2, Dimension N2 = 0, Dimension... N2s>
-		constexpr Tensor<_IMPL CT<S, S2>, N, Ns...> operator*(const Tensor<S2, N2, N2s...>& tensor) const noexcept
+		constexpr CommonTensor<S2> operator*(const Tensor<S2, N2, N2s...>& tensor) const noexcept
 		{
-			return static_cast<Tensor<_IMPL CT<S, S2>, N, Ns...>>(*this) *= static_cast<Tensor<_IMPL CT<S, S2>, N2, N2s...>>(tensor);
+			return static_cast<CommonTensor<S2>>(*this) *= static_cast<Tensor<_IMPL CT<S, S2>, N2, N2s...>>(tensor);
 		}
 
 		// Element-wise multiplication.
@@ -161,17 +165,16 @@ namespace nd
 		requires(_STD is_convertible_v<S2, S>)
 		constexpr Tensor<S, N, Ns...>& operator*=(const Tensor<S2, N2, N2s...>& tensor) noexcept
 		{
-			Dimension n{};
-			for (; n < _GCEM min(N, N2); ++n)
+			for (Dimension n{}; n < _GCEM min(N, N2); ++n)
 				m_Scalars[n] *= tensor[n];
 			return *this;
 		}
 	public:
 		// Scalar division.
 		template <Scalar S2>
-		constexpr Tensor<_IMPL CT<S, S2>, N, Ns...> operator/(S2 scalar) const noexcept
+		constexpr CommonTensor<S2> operator/(S2 scalar) const noexcept
 		{
-			return static_cast<Tensor<_IMPL CT<S, S2>, N, Ns...>>(*this) /= static_cast<_IMPL CT<S, S2>>(scalar);
+			return static_cast<CommonTensor<S2>>(*this) /= static_cast<_IMPL CT<S, S2>>(scalar);
 		}
 
 		// Scalar division.
@@ -186,9 +189,9 @@ namespace nd
 
 		// Element-wise division.
 		template <Scalar S2, Dimension N2 = 0, Dimension... N2s>
-		constexpr Tensor<_IMPL CT<S, S2>, N, Ns...> operator/(const Tensor<S2, N2, N2s...>& tensor) const noexcept
+		constexpr CommonTensor<S2> operator/(const Tensor<S2, N2, N2s...>& tensor) const noexcept
 		{
-			return static_cast<Tensor<_IMPL CT<S, S2>, N, Ns...>>(*this) /= static_cast<Tensor<_IMPL CT<S, S2>, N2, N2s...>>(tensor);
+			return static_cast<CommonTensor<S2>>(*this) /= static_cast<Tensor<_IMPL CT<S, S2>, N2, N2s...>>(tensor);
 		}
 
 		// Element-wise division.
@@ -196,8 +199,7 @@ namespace nd
 		requires(_STD is_convertible_v<S2, S>)
 		constexpr Tensor<S, N, Ns...>& operator/=(const Tensor<S2, N2, N2s...>& tensor) noexcept
 		{
-			Dimension n{};
-			for (; n < _GCEM min(N, N2); ++n)
+			for (Dimension n{}; n < _GCEM min(N, N2); ++n)
 				m_Scalars[n] /= tensor[n];
 			return *this;
 		}
@@ -250,7 +252,7 @@ namespace nd
 		{
 			Tensor<S2, N, Ns...> result;
 			for (Dimension n{}; n < N; ++n)
-				result.Set(n, *this);
+				result[n] = static_cast<Tensor<S2, N, Ns...>::SubTensor>(m_Scalars[n]);
 			return result;
 		}
 
@@ -259,7 +261,7 @@ namespace nd
 		{
 			if (this != (void*)&tensor)
 				for (Dimension n{}; n < N; ++n)
-					if (static_cast<Tensor<_IMPL CT<S, S2>, Ns...>>(m_Scalars[n]) != static_cast<Tensor<_IMPL CT<S, S2>, Ns...>>(tensor[n]))
+					if (static_cast<CommonSubTensor<S2>>(m_Scalars[n]) != static_cast<CommonSubTensor<S2>>(tensor[n]))
 						return false;
 			return true;
 		}
@@ -289,19 +291,10 @@ namespace nd
 			}
 		};
 
-		constexpr size_t Hash() const noexcept
+		template <typename SHasher = _STD hash<S>>
+		constexpr size_t Hash(const Hasher<SHasher>& hasher = {}) const noexcept
 		{
-			return Hasher{}(*this);
-		}
-	private:
-		template <Scalar S2, Dimension N2 = 0, Dimension... N2s>
-		requires(_STD is_convertible_v<S2, S>)
-		constexpr auto Set(Dimension n, const Tensor<S2, N2, N2s...>& tensor) noexcept
-		{
-			if constexpr (Rank == 1)
-				m_Scalars[n] = static_cast<S>(tensor[n]);
-			else
-				m_Scalars[n] = static_cast<Tensor<S, N2s...>>(tensor[n]);
+			return hasher(*this);
 		}
 	protected:
 		_STD array<SubTensor, N> m_Scalars{};

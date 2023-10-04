@@ -1,9 +1,6 @@
 #pragma once
 
-#include "Impl.hpp"
-#include "Tensor.hpp"
 #include "Vector.hpp"
-#include <gcem.hpp>
 
 #define _ND ::nd::
 #define _IMPL ::nd::impl::
@@ -52,8 +49,8 @@ namespace nd
 			Fill<C, R>(_STD forward<S2s>(scalars)...);
 		}
 
-		using Tensor<S, C, R>::operator=;
 	public:
+		using Tensor<S, C, R>::operator=;
 		using Tensor<S, C, R>::operator+; // also handles unary plus.
 		using Tensor<S, C, R>::operator+=;
 		using Tensor<S, C, R>::operator-; // also handles unary plus.
@@ -102,7 +99,7 @@ namespace nd
 	// External Operators
 
 	template <Scalar S1, Scalar S2, Dimension C, Dimension R>
-	constexpr Vector<_IMPL CT<S1, S2>, C> operator*(const Vector<S1, R>& vector, const Matrix<S2, C, R>& matrix) noexcept
+	constexpr Vector<_IMPL CT<S1, S2>, C> operator*(const Tensor<S1, R>& vector, const Tensor<S2, C, R>& matrix) noexcept
 	{
 		Vector<_IMPL CT<S1, S2>, C> result;
 		Matrix<_IMPL CT<S1, S2>, R, C> m{Transpose(Matrix<_IMPL CT<S1, S2>, C, R>{matrix})};
@@ -153,7 +150,7 @@ namespace nd
 
 	template <Scalar S, Dimension C, Dimension R, Dimension C2, Dimension R2>
 	requires(C < C2 && R < R2 && C2 > 1 && R2 > 1)
-	constexpr Matrix<S, C2 - 1, R2 - 1> Submatrix(const Matrix<S, C2, R2>& matrix) noexcept
+	constexpr Matrix<S, C2 - 1, R2 - 1> Submatrix(const Tensor<S, C2, R2>& matrix) noexcept
 	{
 		Matrix<S, C2 - 1, R2 - 1> result{};
 
@@ -178,9 +175,9 @@ namespace nd
 
 	template <Scalar S, Dimension C2, Dimension R2>
 	requires(/*C < C2 && R < R2 && */C2 > 1 && R2 > 1)
-	constexpr Matrix<S, C2 - 1, R2 - 1> Submatrix(Dimension C, Dimension R, const Matrix<S, C2, R2>& matrix) noexcept
+	constexpr Matrix<S, C2 - 1, R2 - 1> Submatrix(Dimension C, Dimension R, const Tensor<S, C2, R2>& matrix) noexcept
 	{
-		__assume(C < C2 && R < R2);
+		//__assume(C < C2 && R < R2);
 
 		Matrix<S, C2 - 1, R2 - 1> result{};
 
@@ -204,7 +201,7 @@ namespace nd
 	}
 
 	template <Scalar S, Dimension CR>
-	constexpr S Trace(const Matrix<S, CR, CR>& matrix) noexcept
+	constexpr S Trace(const Tensor<S, CR, CR>& matrix) noexcept
 	{
 		S result{};
 		for (Dimension cr{}; cr < CR; ++cr)
@@ -213,10 +210,9 @@ namespace nd
 	}
 
 	template <Scalar S, Dimension CR>
-	constexpr S Determinant(const Matrix<S, CR, CR>& matrix) noexcept
+	constexpr S Determinant(const Tensor<S, CR, CR>& matrix) noexcept
 	{
 		S result{};
-
 		for (Dimension c{}; c < CR; ++c)
 		{
 			S subDeterminant{matrix[c][0] * Determinant(Submatrix(c, 0, matrix))};
@@ -225,19 +221,18 @@ namespace nd
 			else
 				result -= subDeterminant;
 		};
-
 		return result;
 	}
 
 	// Base case to stop recursion.
 	template <Scalar S>
-	constexpr S Determinant(const Matrix<S, 1, 1>& matrix) noexcept
+	constexpr S Determinant(const Tensor<S, 2, 2>& matrix) noexcept
 	{
-		return matrix[0][0];
+		return matrix[0][0] * matrix[1][1] - matrix[1][0] * matrix[0][1];
 	}
 
 	template <Scalar S, Dimension C, Dimension R>
-	constexpr Matrix<S, R, C> Transpose(const Matrix<S, C, R>& matrix) noexcept
+	constexpr Matrix<S, R, C> Transpose(const Tensor<S, C, R>& matrix) noexcept
 	{
 		Matrix<S, R, C> result{};
 		for (Dimension c{}; c < C; ++c)
@@ -247,7 +242,7 @@ namespace nd
 	}
 
 	template <Scalar S, Dimension CR>
-	constexpr Matrix<S, CR, CR> Minors(const Matrix<S, CR, CR>& matrix) noexcept
+	constexpr Matrix<S, CR, CR> Minors(const Tensor<S, CR, CR>& matrix) noexcept
 	{
 		Matrix<S, CR, CR> result{};
 		for (Dimension c{}; c < CR; ++c)
@@ -257,7 +252,7 @@ namespace nd
 	}
 
 	template <Scalar S, Dimension CR>
-	constexpr Matrix<S, CR, CR> Cofactors(const Matrix<S, CR, CR>& matrix) noexcept
+	constexpr Matrix<S, CR, CR> Cofactors(const Tensor<S, CR, CR>& matrix) noexcept
 	{
 		Matrix<S, CR, CR> result{Minors(matrix)};
 		for (Dimension c{}; c < CR; ++c)
@@ -268,25 +263,25 @@ namespace nd
 	}
 
 	template <Scalar S, Dimension CR>
-	constexpr Matrix<S, CR, CR> Adjugate(const Matrix<S, CR, CR>& matrix) noexcept
+	constexpr Matrix<S, CR, CR> Adjugate(const Tensor<S, CR, CR>& matrix) noexcept
 	{
 		return Transpose(Cofactors(matrix));
 	}
 
 	template <Scalar S, Dimension CR>
-	constexpr Matrix<S, CR, CR> Inverse(const Matrix<S, CR, CR>& matrix) noexcept
+	constexpr Matrix<S, CR, CR> Inverse(const Tensor<S, CR, CR>& matrix) noexcept
 	{
 		return Adjugate(matrix) / Determinant(matrix);
 	}
 
 	template <Scalar S1, Scalar S2, Dimension CR>
-	constexpr Matrix<_IMPL CT<S1, S2>, CR, CR> Inverse(const Matrix<S1, CR, CR>& matrix, S2 determinant) noexcept
+	constexpr Matrix<_IMPL CT<S1, S2>, CR, CR> Inverse(const Tensor<S1, CR, CR>& matrix, S2 determinant) noexcept
 	{
 		return Adjugate(Matrix<_IMPL CT<S1, S2>, CR, CR>{matrix}) / _IMPL CT<S1, S2>{determinant};
 	}
 
 	template <Scalar S1, Scalar S2, Dimension CR>
-	constexpr Matrix<_IMPL CT<S1, S2>, CR, CR> Translate(const Matrix<S1, CR, CR>& matrix, const Vector<S2, CR - 1>& translation)
+	constexpr Matrix<_IMPL CT<S1, S2>, CR, CR> Translate(const Tensor<S1, CR, CR>& matrix, const Tensor<S2, CR - 1>& translation)
 	{
 		Matrix<_IMPL CT<S1, S2>, CR, CR> t{};
 		for (Dimension r{}; r < CR - 1; ++r)
@@ -296,7 +291,7 @@ namespace nd
 
 	template <Dimension A1, Dimension A2, Scalar S1, Scalar S2, Dimension CR>
 	requires(A1 < CR - 1 && A2 < CR - 1 && A1 != A2)
-	constexpr Matrix<_IMPL CT<S1, S2>, CR, CR> Rotate(const Matrix<S1, CR, CR>& matrix, S2 radians)
+	constexpr Matrix<_IMPL CT<S1, S2>, CR, CR> Rotate(const Tensor<S1, CR, CR>& matrix, S2 radians)
 	{
 		Matrix<_IMPL CT<S1, S2>, CR, CR> rotation{};
 
@@ -311,9 +306,9 @@ namespace nd
 
 	template <Scalar S1, Scalar S2, Dimension CR>
 	//requires(A1 < CR - 1 && A2 < CR - 1 && A1 != A2)
-	constexpr Matrix<_IMPL CT<S1, S2>, CR, CR> Rotate(Dimension A1, Dimension A2, const Matrix<S1, CR, CR>& matrix, S2 radians)
+	constexpr Matrix<_IMPL CT<S1, S2>, CR, CR> Rotate(Dimension A1, Dimension A2, const Tensor<S1, CR, CR>& matrix, S2 radians)
 	{
-		__assume(A1 < CR - 1 && A2 < CR - 1 && A1 != A2);
+		//__assume(A1 < CR - 1 && A2 < CR - 1 && A1 != A2);
 
 		Matrix<_IMPL CT<S1, S2>, CR, CR> rotation{};
 
@@ -327,7 +322,7 @@ namespace nd
 	}
 
 	template <Scalar S1, Scalar S2, Dimension CR>
-	constexpr Matrix<_IMPL CT<S1, S2>, CR, CR> Scale(const Matrix<S1, CR, CR>& matrix, const Vector<S2, CR - 1>& scale)
+	constexpr Matrix<_IMPL CT<S1, S2>, CR, CR> Scale(const Tensor<S1, CR, CR>& matrix, const Tensor<S2, CR - 1>& scale)
 	{
 		Matrix<_IMPL CT<S1, S2>, CR, CR> s{};
 		for (Dimension cr{}; cr < CR - 1; ++cr)
@@ -336,7 +331,7 @@ namespace nd
 	}
 
 	template <Scalar S1, Scalar S2, Dimension CR>
-	constexpr Matrix<_IMPL CT<S1, S2>, CR, CR> Scale(const Matrix<S1, CR, CR>& matrix, S2 scale)
+	constexpr Matrix<_IMPL CT<S1, S2>, CR, CR> Scale(const Tensor<S1, CR, CR>& matrix, S2 scale)
 	{
 		Matrix<_IMPL CT<S1, S2>, CR, CR> s{_IMPL CT<S1, S2>{scale}};
 		s[CR - 1][CR - 1] = _IMPL CT<S1, S2>{1};

@@ -168,7 +168,7 @@ namespace test
 			// without the Vector<S, N> being predefined. In this case, it's not predefined, it's
 			// templated which takes the template args of the parameter, but can't convert.
 			// The conversion operator works, but if it doesn't know what to convert to, it's stuck.
-			hyperplaneBases[n] = Normalize<float, 4>(hyperplaneBases[n]);
+			hyperplaneBases[n] = Normalize(hyperplaneBases[n]);
 		std::cout << "Hyperplane Bases:\n" << hyperplaneBases << '\n';
 
 		// example bounds where

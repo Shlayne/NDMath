@@ -1,9 +1,6 @@
 #pragma once
 
-#include "Impl.hpp"
 #include "Tensor.hpp"
-#include <gcem.hpp>
-#include <algorithm>
 
 #define _ND ::nd::
 #define _IMPL ::nd::impl::
@@ -99,7 +96,7 @@ namespace nd
 		};
 
 		template <Scalar S, Dimension N, Function<S, S> Func>
-		constexpr Vector<S, N> Apply(const Func& func, const Vector<S, N>& vector)
+		constexpr Vector<S, N> Apply(const Func& func, const Tensor<S, N>& vector)
 		{
 			Vector<S, N> result;
 			for (Dimension n{}; n < N; ++n)
@@ -108,7 +105,7 @@ namespace nd
 		}
 
 		template <Scalar S, Dimension N, Function<S, S, S> Func>
-		constexpr Vector<S, N> Apply(const Func& func, const Vector<S, N>& vector1, const Vector<S, N>& vector2)
+		constexpr Vector<S, N> Apply(const Func& func, const Tensor<S, N>& vector1, const Tensor<S, N>& vector2)
 		{
 			Vector<S, N> result;
 			for (Dimension n{}; n < N; ++n)
@@ -117,7 +114,7 @@ namespace nd
 		}
 
 		template <Scalar S, Dimension N, Function<S, S, S, S> Func>
-		constexpr Vector<S, N> Apply(const Func& func, const Vector<S, N> vector1, const Vector<S, N>& vector2, const Vector<S, N>& vector3)
+		constexpr Vector<S, N> Apply(const Func& func, const Tensor<S, N> vector1, const Tensor<S, N>& vector2, const Tensor<S, N>& vector3)
 		{
 			Vector<S, N> result;
 			for (Dimension n{}; n < N; ++n)
@@ -126,7 +123,7 @@ namespace nd
 		}
 
 		template <Scalar S, Dimension N, Function<S, S, S, S> Func>
-		constexpr Vector<S, N> Apply(const Func& func, const Vector<S, N> vector1, const Vector<S, N>& vector2, S scalar)
+		constexpr Vector<S, N> Apply(const Func& func, const Tensor<S, N> vector1, const Tensor<S, N>& vector2, S scalar)
 		{
 			Vector<S, N> result;
 			for (Dimension n{}; n < N; ++n)
@@ -136,92 +133,92 @@ namespace nd
 	}
 
 	template <Scalar S1, Scalar S2, Dimension N>
-	constexpr _IMPL CT<S1, S2> Dot(const Vector<S1, N>& vector1, const Vector<S2, N>& vector2) noexcept
+	constexpr _IMPL CT<S1, S2> Dot(const Tensor<S1, N>& vector1, const Tensor<S2, N>& vector2) noexcept
 	{
 		return _ND InnerProduct(vector1, vector2);
 	}
 
 	template <Scalar S, Dimension N>
-	constexpr S Length2(const Vector<S, N>& vector) noexcept
+	constexpr S Length2(const Tensor<S, N>& vector) noexcept
 	{
 		return _ND Dot(vector, vector);
 	}
 
 	template <Scalar S, Dimension N>
-	constexpr S Length(const Vector<S, N>& vector) noexcept
+	constexpr S Length(const Tensor<S, N>& vector) noexcept
 	{
 		return S{_GCEM sqrt(_ND Length2(vector))};
 	}
 
 	template <Scalar S, Dimension N>
-	constexpr Vector<S, N> Normalize(const Vector<S, N>& vector) noexcept
+	constexpr Vector<S, N> Normalize(const Tensor<S, N>& vector) noexcept
 	{
 		return vector / _ND Length(vector);
 	}
 
 	template <Scalar S1, Scalar S2, Dimension N>
-	constexpr Vector<_IMPL CT<S1, S2>, N> Min(const Vector<S1, N>& vector1, const Vector<S2, N>& vector2) noexcept
+	constexpr Vector<_IMPL CT<S1, S2>, N> Min(const Tensor<S1, N>& vector1, const Tensor<S2, N>& vector2) noexcept
 	{
 		return _IMPL Apply(_GCEM min, Vector<_IMPL CT<S1, S2>, N>{vector1}, Vector<_IMPL CT<S1, S2>, N>{vector2});
 	}
 
 	template <Scalar S1, Scalar S2, Dimension N>
-	constexpr Vector<_IMPL CT<S1, S2>, N> Max(const Vector<S1, N>& vector1, const Vector<S2, N>& vector2) noexcept
+	constexpr Vector<_IMPL CT<S1, S2>, N> Max(const Tensor<S1, N>& vector1, const Tensor<S2, N>& vector2) noexcept
 	{
 		return _IMPL Apply(_GCEM max, Vector<_IMPL CT<S1, S2>, N>{vector1}, Vector<_IMPL CT<S1, S2>, N>{vector2});
 	}
 
 	template <Scalar S, Dimension N>
-	constexpr Vector<S, N> Abs(const Vector<S, N>& vector) noexcept
+	constexpr Vector<S, N> Abs(const Tensor<S, N>& vector) noexcept
 	{
 		return _IMPL Apply(_GCEM abs, vector);
 	}
 
 	template <Scalar S, Dimension N>
-	constexpr Vector<S, N> Floor(const Vector<S, N>& vector) noexcept
+	constexpr Vector<S, N> Floor(const Tensor<S, N>& vector) noexcept
 	{
 		return _IMPL Apply(_GCEM floor, vector);
 	}
 
 	template <Scalar S, Dimension N>
-	constexpr Vector<S, N> Ceil(const Vector<S, N>& vector) noexcept
+	constexpr Vector<S, N> Ceil(const Tensor<S, N>& vector) noexcept
 	{
 		return _IMPL Apply(_GCEM ceil, vector);
 	}
 
 	template <Scalar S1, Scalar S2, Dimension N>
-	constexpr Vector<_IMPL CT<S1, S2>, N> Mod(const Vector<S1, N>& vector1, const Vector<S2, N>& vector2) noexcept
+	constexpr Vector<_IMPL CT<S1, S2>, N> Mod(const Tensor<S1, N>& vector1, const Tensor<S2, N>& vector2) noexcept
 	{
 		return _IMPL Apply(_GCEM fmod, Vector<_IMPL CT<S1, S2>, N>{vector1}, Vector<_IMPL CT<S1, S2>, N>{vector2});
 	}
 
 	template <Scalar S1, Scalar S2, Scalar S3, Dimension N>
-	constexpr Vector<_IMPL CT<S1, S2, S3>, N> Clamp(const Vector<S1, N>& vector, const Vector<S2, N>& min, const Vector<S3, N>& max) noexcept
+	constexpr Vector<_IMPL CT<S1, S2, S3>, N> Clamp(const Tensor<S1, N>& vector, const Tensor<S2, N>& min, const Tensor<S3, N>& max) noexcept
 	{
 		return _IMPL Apply(_STD clamp, Vector<_IMPL CT<S1, S2, S3>, N>{vector}, Vector<_IMPL CT<S1, S2, S3>, N>{min}, Vector<_IMPL CT<S1, S2, S3>, N>{max});
 	}
 
 	template <Scalar S, Dimension N>
-	constexpr Vector<S, N> Trunc(const Vector<S, N>& vector) noexcept
+	constexpr Vector<S, N> Trunc(const Tensor<S, N>& vector) noexcept
 	{
 		return _IMPL Apply(_GCEM trunc, vector);
 	}
 
 	template <Scalar S, Dimension N>
-	constexpr Vector<S, N> Round(const Vector<S, N>& vector) noexcept
+	constexpr Vector<S, N> Round(const Tensor<S, N>& vector) noexcept
 	{
 		return _IMPL Apply(_GCEM round, vector);
 	}
 
 	template <Scalar S1, Scalar S2, Scalar S3, Dimension N>
-	constexpr Vector<_IMPL CT<S1, S2, S3>, N> Lerp(const Vector<S1, N>& vector1, const Vector<S2, N>& vector2, const S3& t) noexcept
+	constexpr Vector<_IMPL CT<S1, S2, S3>, N> Lerp(const Tensor<S1, N>& vector1, const Tensor<S2, N>& vector2, S3 t) noexcept
 	{
 		return _IMPL Apply(_IMPL Lerp, Vector<_IMPL CT<S1, S2, S3>, N>{vector1}, Vector<_IMPL CT<S1, S2, S3>, N>{vector2}, _IMPL CT<S1, S2, S3>{t});
 	}
 
 	template <Scalar S1, Scalar S2>
 	requires(_STD is_convertible_v<S2, S1>)
-	constexpr Vector<_IMPL CT<S1, S2>, 3> Cross(const Vector<S1, 3>& vector1, const Vector<S2, 3>& vector2) noexcept
+	constexpr Vector<_IMPL CT<S1, S2>, 3> Cross(const Tensor<S1, 3>& vector1, const Tensor<S2, 3>& vector2) noexcept
 	{
 		Vector<_IMPL CT<S1, S2>, 3> v1{vector1};
 		Vector<_IMPL CT<S1, S2>, 3> v2{vector2};
@@ -236,7 +233,7 @@ namespace nd
 
 	template <Scalar S1, Scalar S2>
 	requires(_STD is_convertible_v<S2, S1>)
-	constexpr Vector<_IMPL CT<S1, S2>, 7> Cross(const Vector<S1, 7>& vector1, const Vector<S2, 7>& vector2) noexcept
+	constexpr Vector<_IMPL CT<S1, S2>, 7> Cross(const Tensor<S1, 7>& vector1, const Tensor<S2, 7>& vector2) noexcept
 	{
 		Vector<_IMPL CT<S1, S2>, 7> v1{vector1};
 		Vector<_IMPL CT<S1, S2>, 7> v2{vector2};
