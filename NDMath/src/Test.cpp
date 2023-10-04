@@ -33,6 +33,7 @@ namespace test
 		//constexpr float e3b = e3;
 
 		Tensor<float, 4> a;
+
 		a[0] = 1;
 		a[1] = 3;
 		a[2] = -4;
@@ -43,19 +44,20 @@ namespace test
 		std::cout << a.at<3>() << '\n'; // compiles (good)
 		//a.at<4>(); // doesn't compile (good)
 
-		//Vector4f b{a * 2}; // for some reason, this crashes intellisense... :/
+		Vector4f _ab{a * 2};
 
 		Tensor<float, 5> b;
 		b = 6;
 		Vector3f e{Vector4f{5.9, 2.6f}};
-		Vector1f f = b;
+		Vector2f f;
+		Vector2f _af = b;
 
 		std::cout << a.Hash() << '\n';
 
 		//std::cout << b << '\n';
 
-		//Tensor<long, 1, 4> c = a; // TODO: doesn't compile.
-		//auto c = static_cast<Tensor<float, 1, 4>>(a);
+		Tensor<long, 4> _ac = a;
+		auto c = static_cast<Tensor<float, 4>>(a);
 
 		e = f;
 		f = e;
@@ -161,7 +163,12 @@ namespace test
 		};
 
 		for (Dimension n{}; n < 4; ++n)
-			hyperplaneBases[n] = Normalize(Vector4f{hyperplaneBases[n]}); // TODO: make this not require manual Vector4f cast.
+			// TODO: remove <float, 4> requirement.
+			// It's only there cause it can't tell how to convert a Tensor<S, N> to a Vector<S, N>
+			// without the Vector<S, N> being predefined. In this case, it's not predefined, it's
+			// templated which takes the template args of the parameter, but can't convert.
+			// The conversion operator works, but if it doesn't know what to convert to, it's stuck.
+			hyperplaneBases[n] = Normalize<float, 4>(hyperplaneBases[n]);
 		std::cout << "Hyperplane Bases:\n" << hyperplaneBases << '\n';
 
 		// example bounds where
