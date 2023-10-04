@@ -179,6 +179,19 @@ namespace test
 		Vector4f minBounds = {0.0f, 0.0f, 10.0f, -10.0f};
 		Vector4f maxBounds = {1.0f, -1.0f, 100.0f, -100.0f};
 
+		auto nml = Normalize(minBounds);
+		nml = maxBounds;
+		std::cout << "Normal: " << nml << '\n';
+		std::cout << "Normal Length: " << Length(nml) << '\n';
+		auto nml_1 = nml + 2; // compiles (good)
+		//auto nml_2 = nml += 2; // doesn't compile (good)
+		auto nml_3 = nml - 2; // compiles (good)
+		//auto nml_4 = nml -= 2; // doesn't compile (good)
+		auto nml_5 = nml * 2; // compiles (good)
+		//auto nml_6 = nml *= 2; // doesn't compile (good)
+		auto nml_7 = nml / 2; // compiles (good)
+		//auto nml_8 = nml /= 2; // doesn't compile (good)
+
 		Vector4f randomPoint = RandomPointInBoundedHyperplane(hyperplaneBases, minBounds, maxBounds, test::RandomRange<float>);
 		std::cout << "Random Point: " << randomPoint << '\n';
 

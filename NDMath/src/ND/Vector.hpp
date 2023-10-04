@@ -97,6 +97,7 @@ namespace nd
 		constexpr Normal& operator=(const Normal&) noexcept = default;
 
 		constexpr Normal(const Tensor<S, N>& vector);
+		constexpr Normal& operator=(const Tensor<S, N>& vector);
 	public:
 		using Vector<S, N>::operator+; // also handles unary plus.
 		using Vector<S, N>::operator-; // also handles unary minus.
@@ -104,6 +105,40 @@ namespace nd
 		using Vector<S, N>::operator/;
 		using Vector<S, N>::operator==;
 		using Vector<S, N>::operator!=;
+
+		// These could also violate the definition, so they too are not allowed.
+	public:
+		template <Scalar S2>
+		requires(_STD is_convertible_v<S2, S>)
+		constexpr Tensor<S, N>& operator+=(S2) = delete;
+
+		template <Scalar S2, Dimension N2>
+		requires(_STD is_convertible_v<S2, S>)
+		constexpr Tensor<S, N>& operator+=(const Tensor<S2, N2>&) = delete;
+
+		template <Scalar S2>
+		requires(_STD is_convertible_v<S2, S>)
+		constexpr Tensor<S, N>& operator-=(S2) = delete;
+
+		template <Scalar S2, Dimension N2>
+		requires(_STD is_convertible_v<S2, S>)
+		constexpr Tensor<S, N>& operator-=(const Tensor<S2, N2>&) = delete;
+
+		template <Scalar S2>
+		requires(_STD is_convertible_v<S2, S>)
+		constexpr Tensor<S, N>& operator*=(S2) = delete;
+
+		template <Scalar S2, Dimension N2>
+		requires(_STD is_convertible_v<S2, S>)
+		constexpr Tensor<S, N>& operator*=(const Tensor<S2, N2>&) = delete;
+
+		template <Scalar S2>
+		requires(_STD is_convertible_v<S2, S>)
+		constexpr Tensor<S, N>& operator/=(S2) = delete;
+
+		template <Scalar S2, Dimension N2>
+		requires(_STD is_convertible_v<S2, S>)
+		constexpr Tensor<S, N>& operator/=(const Tensor<S2, N2>&) = delete;
 	public:
 		template <Dimension N2>
 		requires(N2 < N)
@@ -299,6 +334,7 @@ namespace nd
 	}
 
 	// Normal
+	// These needs to be defined down here because they use nd::Length, which is defined after Normal.
 
 	template <Scalar S, Dimension N>
 	constexpr Normal<S, N>::Normal(const Tensor<S, N>& vector)
@@ -306,6 +342,18 @@ namespace nd
 		Tensor<S, N> normalized = vector / _ND Length(vector);
 		for (Dimension n{}; n < N; ++n)
 			m_Scalars[n] = normalized[n];
+	}
+
+	template <Scalar S, Dimension N>
+	constexpr auto Normal<S, N>::operator=(const Tensor<S, N>& vector) -> Normal&
+	{
+		if (_STD addressof(*this) != _STD addressof(vector))
+		{
+			Tensor<S, N> normalized = vector / _ND Length(vector);
+			for (Dimension n{}; n < N; ++n)
+				m_Scalars[n] = normalized[n];
+		}
+		return *this;
 	}
 
 	// Aliases

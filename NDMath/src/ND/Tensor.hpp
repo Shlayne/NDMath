@@ -259,7 +259,7 @@ namespace nd
 		template <Scalar S2>
 		constexpr bool operator==(const Tensor<S2, N, Ns...>& tensor) const noexcept
 		{
-			if (this != (void*)&tensor)
+			if (_STD addressof(*this) != _STD addressof(tensor))
 				for (Dimension n{}; n < N; ++n)
 					if (static_cast<CommonSubTensor<S2>>(m_Scalars[n]) != static_cast<CommonSubTensor<S2>>(tensor[n]))
 						return false;
